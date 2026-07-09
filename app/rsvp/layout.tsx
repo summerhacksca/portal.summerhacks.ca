@@ -5,6 +5,8 @@ export const metadata: Metadata = {
 	description: "RSVP for SummerHacks",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RSVPLayout({
 	children,
 }: {
