@@ -16,6 +16,35 @@ export async function POST(request: NextRequest) {
 
 		const supabase = createAdminClient();
 
+		// Check if the applicant exists and was accepted
+		const { data: application, error: lookupError } = await supabase
+			.from("application_submissions")
+			.select("id, status")
+			.eq("applicant_email", normalizedEmail)
+			.maybeSingle();
+
+		if (lookupError) {
+			console.error("Failed to look up applicant:", lookupError);
+			return NextResponse.json(
+				{ error: "Failed to verify applicant" },
+				{ status: 500 },
+			);
+		}
+
+		if (!application) {
+			return NextResponse.json(
+				{ error: "No application found for this email." },
+				{ status: 403 },
+			);
+		}
+
+		if (application.status !== "accepted") {
+			return NextResponse.json(
+				{ error: "Your application has not been accepted yet." },
+				{ status: 403 },
+			);
+		}
+
 		const { error } = await supabase.auth.signInWithOtp({
 			email: normalizedEmail,
 			options: {
