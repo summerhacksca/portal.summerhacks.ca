@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ArrowUp } from "lucide-react";
 
 function SelectField({
@@ -49,14 +49,30 @@ function SelectField({
 	);
 }
 
-export default function RSVPPage() {
-	const [submitting, setSubmitting] = useState(false);
-	const [submitMessage, setSubmitMessage] = useState("");
-	const [submitError, setSubmitError] = useState("");
-	const [formData, setFormData] = useState({
-		participating: "",
-		downtown: "",
-	});
+	export default function RSVPPage() {
+		const [submitting, setSubmitting] = useState(false);
+		const [submitMessage, setSubmitMessage] = useState("");
+		const [submitError, setSubmitError] = useState("");
+		const [hasExistingRsvp, setHasExistingRsvp] = useState(false);
+		const [formData, setFormData] = useState({
+			participating: "",
+			downtown: "",
+		});
+	
+		useEffect(() => {
+			fetch("/api/rsvp")
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.rsvp) {
+						setHasExistingRsvp(true);
+						setFormData({
+							participating: data.rsvp.participating,
+							downtown: data.rsvp.downtown,
+						});
+					}
+				})
+				.catch(() => {});
+		}, []);
 
 	const handleFieldChange = (name: string, value: string) => {
 		setFormData((prev) => ({ ...prev, [name]: value }));
@@ -87,7 +103,11 @@ export default function RSVPPage() {
 				throw new Error(data.error ?? "Failed to submit RSVP");
 			}
 
-			setSubmitMessage("Your RSVP has been recorded. Thank you!");
+			setSubmitMessage(
+				hasExistingRsvp
+					? "Your RSVP has been updated. Thank you!"
+					: "Your RSVP has been recorded. Thank you!",
+			);
 		} catch (err) {
 			setSubmitError((err as Error).message);
 		} finally {
@@ -233,7 +253,11 @@ export default function RSVPPage() {
 							disabled={submitting}
 							className="inline-flex h-14 items-center justify-center gap-2 self-start rounded-[100px] bg-[#F80] px-6 text-white transition-colors hover:bg-[#e67300] disabled:opacity-50"
 						>
-							{submitting ? "Submitting..." : "Submit"}
+							{submitting
+								? "Submitting..."
+								: hasExistingRsvp
+									? "Update RSVP"
+									: "Submit"}
 							<ArrowUp size={20} className="rotate-90" />
 						</button>
 					</form>
