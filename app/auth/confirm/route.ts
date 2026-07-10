@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -11,61 +11,66 @@ export async function GET(request: Request) {
 	const safeNext = next.startsWith("/") ? next : "/rsvp";
 	const origin = "https://portal.summerhacks.ca";
 
-	// Use the regular supabase client (not SSR) for auth operations
-	const supabase = createClient(
+	// Collect cookies to set through the redirect response
+	const cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[] = [];
+
+	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			cookies: {
+				getAll() {
+					return request.headers.has("cookie")
+						? request.headers.get("cookie")!.split(";").map((c) => {
+								const [name, ...rest] = c.trim().split("=");
+								return { name, value: rest.join("=") };
+							})
+						: [];
+				},
+				setAll(cookies) {
+					for (const { name, value, options } of cookies) {
+						cookiesToSet.push({ name, value, options: options ?? {} });
+					}
+				},
+			},
+		},
 	);
 
-	let session = null;
+	let authenticated = false;
 
 	if (code) {
-		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-		if (!error) session = data.session;
+		const { error } = await supabase.auth.exchangeCodeForSession(code);
+		if (!error) authenticated = true;
 	}
 
-	if (!session && tokenHash && type) {
-		const { data, error } = await supabase.auth.verifyOtp({
+	if (!authenticated && tokenHash && type) {
+		const { error } = await supabase.auth.verifyOtp({
 			type,
 			token_hash: tokenHash,
 		});
-		if (!error) session = data.session;
+		if (!error) authenticated = true;
 	}
 
-	if (!session) {
+	if (!authenticated) {
 		const {
 			data: { user },
 		} = await supabase.auth.getUser();
-		if (user) {
-			// Get the session from the stored session
-			const { data: sessionData } = await supabase.auth.getSession();
-			session = sessionData.session;
-		}
+		if (user) authenticated = true;
 	}
 
-	const redirectUrl = session ? `${origin}${safeNext}` : `${origin}/rsvp/login`;
-	const redirectResponse = NextResponse.redirect(redirectUrl);
+	const redirectUrl = authenticated ? `${origin}${safeNext}` : `${origin}/rsvp/login`;
+	const response = NextResponse.redirect(redirectUrl);
 
-	if (session) {
-		// Set the Supabase auth cookie manually
-		const projectRef = "hnnhlmemiicfrjhwwvni";
-		const cookieName = `sb-${projectRef}-auth-token`;
-		const cookieValue = JSON.stringify({
-			access_token: session.access_token,
-			refresh_token: session.refresh_token,
-			expires_at: Math.floor(session.expires_at ?? Date.now() / 1000 + 3600),
-			expires_in: session.expires_in ?? 3600,
-			token_type: session.token_type ?? "bearer",
-		});
-
-		redirectResponse.cookies.set(cookieName, cookieValue, {
-			path: "/",
-			httpOnly: true,
-			sameSite: "lax",
-			secure: true,
-			maxAge: 60 * 60 * 24 * 365, // 1 year
+	// Apply cookies that the auth calls wanted to set
+	for (const { name, value, options } of cookiesToSet) {
+		response.cookies.set(name, value, {
+			path: options.path as string ?? "/",
+			httpOnly: options.httpOnly as boolean ?? true,
+			sameSite: (options.sameSite as "lax" | "strict" | "none") ?? "lax",
+			secure: options.secure as boolean ?? true,
+			maxAge: options.maxAge as number ?? 60 * 60 * 24 * 365,
 		});
 	}
 
-	return redirectResponse;
+	return response;
 }
