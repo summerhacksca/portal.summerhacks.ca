@@ -6,16 +6,15 @@ export async function GET(request: Request) {
 	console.log("[auth/confirm] received request", request.url);
 
 	const { searchParams } = new URL(request.url);
-	const code = searchParams.get("code");
 	const tokenHash = searchParams.get("token_hash");
 	const type = searchParams.get("type") as EmailOtpType | null;
 	const next = searchParams.get("next") ?? "/rsvp";
 	const safeNext = next.startsWith("/") ? next : "/rsvp";
 	const origin = "https://portal.summerhacks.ca";
 
-	console.log("[auth/confirm] params", { code: !!code, tokenHash: !!tokenHash, type, next: safeNext });
+	console.log("[auth/confirm] params", { tokenHash: !!tokenHash, type, next: safeNext });
 
-	// Use implicit flow so the magic link uses token_hash (not PKCE code)
+	// Use implicit flow so the magic link sends token_hash (not PKCE code)
 	const supabase = createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -24,18 +23,8 @@ export async function GET(request: Request) {
 
 	let session = null;
 
-	if (code) {
-		console.log("[auth/confirm] trying exchangeCodeForSession");
-		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-		if (error) {
-			console.log("[auth/confirm] exchangeCodeForSession error:", error.message);
-		} else {
-			console.log("[auth/confirm] exchangeCodeForSession success, user:", data.session?.user?.email);
-			session = data.session;
-		}
-	}
-
-	if (!session && tokenHash && type) {
+	// With implicit flow, the magic link delivers token_hash + type
+	if (tokenHash && type) {
 		console.log("[auth/confirm] trying verifyOtp");
 		const { data, error } = await supabase.auth.verifyOtp({
 			type,

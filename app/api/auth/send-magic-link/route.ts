@@ -14,15 +14,14 @@ export async function POST(request: NextRequest) {
 
 		const normalizedEmail = email.trim().toLowerCase();
 
-		// Use implicit flow so the magic link uses token_hash instead of PKCE code
-		const supabase = createClient(
+		// Use admin client for DB lookup (bypasses RLS)
+		const adminClient = createClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
 			process.env.SUPABASE_SERVICE_ROLE_KEY!,
-			{ auth: { flowType: "implicit" } },
 		);
 
 		// Check if the applicant exists and was accepted
-		const { data: application, error: lookupError } = await supabase
+		const { data: application, error: lookupError } = await adminClient
 			.from("application_submissions")
 			.select("id, status")
 			.eq("applicant_email", normalizedEmail)
@@ -50,7 +49,14 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const { error } = await supabase.auth.signInWithOtp({
+		// Use a separate anon-key client for auth operations
+		const authClient = createClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{ auth: { flowType: "implicit" } },
+		);
+
+		const { error } = await authClient.auth.signInWithOtp({
 			email: normalizedEmail,
 			options: {
 				emailRedirectTo: `https://portal.summerhacks.ca/auth/confirm?next=/rsvp`,
