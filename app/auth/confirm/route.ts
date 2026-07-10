@@ -15,9 +15,11 @@ export async function GET(request: Request) {
 
 	console.log("[auth/confirm] params", { code: !!code, tokenHash: !!tokenHash, type, next: safeNext });
 
+	// Use implicit flow so the magic link uses token_hash (not PKCE code)
 	const supabase = createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{ auth: { flowType: "implicit" } },
 	);
 
 	let session = null;
