@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 		const { error } = await supabase.auth.signInWithOtp({
 			email: normalizedEmail,
 			options: {
-				emailRedirectTo: `${new URL(request.url).origin}/auth/confirm?next=/rsvp`,
+				emailRedirectTo: `https://portal.summerhacks.ca/auth/confirm?next=/rsvp`,
 			},
 		});
 
