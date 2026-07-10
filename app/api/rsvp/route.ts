@@ -1,16 +1,23 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
 	try {
-		const supabase = await createClient();
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-
-		if (!user?.email) {
+		// Read session from our custom cookie
+		const sessionCookie = request.cookies.get("sh_session");
+		if (!sessionCookie?.value) {
 			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+		}
+
+		let session: { access_token?: string; email?: string; user_id?: string };
+		try {
+			session = JSON.parse(sessionCookie.value);
+		} catch {
+			return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+		}
+
+		if (!session.access_token || !session.user_id) {
+			return NextResponse.json({ error: "Invalid session" }, { status: 401 });
 		}
 
 		const body = await request.json();
@@ -24,12 +31,15 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const adminClient = createAdminClient();
+		const adminClient = createClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.SUPABASE_SERVICE_ROLE_KEY!,
+		);
 
 		const { data: existing } = await adminClient
 			.from("rsvp_submissions")
 			.select("id")
-			.eq("user_id", user.id)
+			.eq("user_id", session.user_id)
 			.maybeSingle();
 
 		if (existing) {
@@ -56,8 +66,8 @@ export async function POST(request: NextRequest) {
 		const { error: insertError } = await adminClient
 			.from("rsvp_submissions")
 			.insert({
-				user_id: user.id,
-				email: user.email,
+				user_id: session.user_id,
+				email: session.email ?? "",
 				participating,
 				downtown,
 			});

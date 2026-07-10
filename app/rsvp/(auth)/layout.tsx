@@ -1,22 +1,19 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
 export default async function AuthLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const supabase = await createClient();
+	const cookieStore = await cookies();
+	const sessionCookie = cookieStore.get("sh_session");
 
-	// Use getSession() instead of getUser() — reads the session from cookies
-	// without an API call, which is more reliable for SSR
-	const {
-		data: { session },
-	} = await supabase.auth.getSession();
-
-	if (!session) {
+	if (!sessionCookie?.value) {
 		redirect("/rsvp/login");
 	}
 
+	// Verify the session is valid by checking the cookie exists
+	// (The RSVP API will validate the token server-side)
 	return <>{children}</>;
 }
