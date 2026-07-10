@@ -1,27 +1,33 @@
-import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export async function createClient() {
 	const cookieStore = await cookies();
+	const sessionCookie = cookieStore.get("sh_session");
 
-	return createServerClient(
+	if (sessionCookie?.value) {
+		try {
+			const session = JSON.parse(sessionCookie.value);
+			if (session.access_token) {
+				return createSupabaseClient(
+					process.env.NEXT_PUBLIC_SUPABASE_URL!,
+					process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+					{
+						global: {
+							headers: {
+								Authorization: `Bearer ${session.access_token}`,
+							},
+						},
+					},
+				);
+			}
+		} catch {
+			// invalid cookie, fall through
+		}
+	}
+
+	return createSupabaseClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-		{
-			cookies: {
-				getAll() {
-					return cookieStore.getAll();
-				},
-				setAll(cookiesToSet) {
-					try {
-						cookiesToSet.forEach(({ name, value, options }) =>
-							cookieStore.set(name, value, options),
-						);
-					} catch {
-						// ignored when called from Server Components
-					}
-				},
-			},
-		},
 	);
 }
