@@ -3,6 +3,8 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+	console.log("[auth/confirm] received request", request.url);
+
 	const { searchParams } = new URL(request.url);
 	const code = searchParams.get("code");
 	const tokenHash = searchParams.get("token_hash");
@@ -10,6 +12,8 @@ export async function GET(request: Request) {
 	const next = searchParams.get("next") ?? "/rsvp";
 	const safeNext = next.startsWith("/") ? next : "/rsvp";
 	const origin = "https://portal.summerhacks.ca";
+
+	console.log("[auth/confirm] params", { code: !!code, tokenHash: !!tokenHash, type, next: safeNext });
 
 	const supabase = createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,43 +23,62 @@ export async function GET(request: Request) {
 	let session = null;
 
 	if (code) {
+		console.log("[auth/confirm] trying exchangeCodeForSession");
 		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-		console.log("[auth/confirm] exchangeCodeForSession", error ? `error: ${error.message}` : "success");
-		if (!error) session = data.session;
+		if (error) {
+			console.log("[auth/confirm] exchangeCodeForSession error:", error.message);
+		} else {
+			console.log("[auth/confirm] exchangeCodeForSession success, user:", data.session?.user?.email);
+			session = data.session;
+		}
 	}
 
 	if (!session && tokenHash && type) {
+		console.log("[auth/confirm] trying verifyOtp");
 		const { data, error } = await supabase.auth.verifyOtp({
 			type,
 			token_hash: tokenHash,
 		});
-		console.log("[auth/confirm] verifyOtp", error ? `error: ${error.message}` : "success");
-		if (!error) session = data.session;
+		if (error) {
+			console.log("[auth/confirm] verifyOtp error:", error.message);
+		} else {
+			console.log("[auth/confirm] verifyOtp success, user:", data.session?.user?.email);
+			session = data.session;
+		}
 	}
 
 	if (!session) {
+		console.log("[auth/confirm] trying getSession fallback");
 		const { data } = await supabase.auth.getSession();
 		session = data.session;
+		if (session) {
+			console.log("[auth/confirm] getSession found user:", session.user?.email);
+		}
 	}
 
 	console.log("[auth/confirm] session found:", !!session);
+	console.log("[auth/confirm] redirecting to", session ? `${origin}${safeNext}` : `${origin}/rsvp/login`);
 
 	const redirectUrl = session ? `${origin}${safeNext}` : `${origin}/rsvp/login`;
 	const response = NextResponse.redirect(redirectUrl);
 
 	if (session) {
-		response.cookies.set("sh_session", JSON.stringify({
+		const cookieValue = JSON.stringify({
 			access_token: session.access_token,
 			refresh_token: session.refresh_token,
 			email: session.user?.email,
 			user_id: session.user?.id,
-		}), {
+		});
+		console.log("[auth/confirm] setting sh_session cookie");
+		response.cookies.set("sh_session", cookieValue, {
 			path: "/",
 			httpOnly: true,
 			sameSite: "lax",
 			secure: true,
-			maxAge: 60 * 60 * 24 * 7, // 7 days
+			maxAge: 60 * 60 * 24 * 7,
 		});
+	} else {
+		console.log("[auth/confirm] no session, not setting cookie");
 	}
 
 	return response;
