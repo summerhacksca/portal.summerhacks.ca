@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
 	console.log("[auth/confirm] received request", request.url);
@@ -12,16 +12,16 @@ export async function GET(request: NextRequest) {
 
 	console.log("[auth/confirm] params", { code: !!code, tokenHash: !!tokenHash, type });
 
-	// Client for both implicit (token_hash) and PKCE (code) fallback
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-		{ auth: { flowType: "implicit" } },
-	);
+	// Collect cookies @supabase/ssr wants to set (PKCE verifier, auth session)
+	// so we can apply them to our own redirect response
+	const ssrCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
+	const supabase = await createClient(ssrCookies);
 
 	let session = null;
 
-	// Try PKCE flow first (code parameter)
+	// PKCE flow: Supabase redirects with ?code=<pkce_code>
+	// @supabase/ssr reads the PKCE verifier from the cookie (set by send-magic-link)
+	// and exchanges the code for a session.
 	if (code) {
 		console.log("[auth/confirm] trying exchangeCodeForSession (PKCE)");
 		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 		}
 	}
 
-	// Fall back to implicit flow (token_hash parameter)
+	// Fallback: implicit flow (token_hash parameter) — works without PKCE verifier
 	if (!session && tokenHash && type) {
 		console.log("[auth/confirm] trying verifyOtp (implicit)");
 		const { data, error } = await supabase.auth.verifyOtp({
@@ -65,7 +65,13 @@ export async function GET(request: NextRequest) {
 
 	const response = NextResponse.redirect(redirectTo);
 
+	// Apply auth cookies from @supabase/ssr (auth session cookies, PKCE verifier)
+	for (const { name, value, options } of ssrCookies) {
+		response.cookies.set(name, value, options);
+	}
+
 	if (session) {
+		// Set our custom session cookie for the middleware and RSVP API
 		const cookieValue = JSON.stringify({
 			access_token: session.access_token,
 			refresh_token: session.refresh_token,
