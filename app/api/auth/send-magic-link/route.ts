@@ -1,5 +1,5 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -14,7 +14,12 @@ export async function POST(request: NextRequest) {
 
 		const normalizedEmail = email.trim().toLowerCase();
 
-		const supabase = createAdminClient();
+		// Use implicit flow so the magic link uses token_hash instead of PKCE code
+		const supabase = createClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.SUPABASE_SERVICE_ROLE_KEY!,
+			{ auth: { flowType: "implicit" } },
+		);
 
 		// Check if the applicant exists and was accepted
 		const { data: application, error: lookupError } = await supabase
