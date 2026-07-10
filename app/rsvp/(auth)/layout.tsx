@@ -7,11 +7,14 @@ export default async function AuthLayout({
 	children: React.ReactNode;
 }) {
 	const supabase = await createClient();
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
 
-	if (!user) {
+	// Use getSession() instead of getUser() — reads the session from cookies
+	// without an API call, which is more reliable for SSR
+	const {
+		data: { session },
+	} = await supabase.auth.getSession();
+
+	if (!session) {
 		redirect("/rsvp/login");
 	}
 
