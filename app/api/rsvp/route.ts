@@ -9,15 +9,38 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 		}
 
-		let session: { access_token?: string; email?: string; user_id?: string };
+		let cookieSession: { access_token?: string; email?: string; user_id?: string };
 		try {
-			session = JSON.parse(sessionCookie.value);
+			cookieSession = JSON.parse(sessionCookie.value);
 		} catch {
 			return NextResponse.json({ error: "Invalid session" }, { status: 401 });
 		}
 
-		if (!session.access_token || !session.user_id) {
+		if (!cookieSession.access_token) {
 			return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+		}
+
+		// Verify the token is still valid with Supabase
+		const supabase = createClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				global: {
+					headers: {
+						Authorization: `Bearer ${cookieSession.access_token}`,
+					},
+				},
+			},
+		);
+
+		const { data: { user }, error: verifyError } = await supabase.auth.getUser();
+
+		if (verifyError || !user) {
+			console.error("Session verification failed:", verifyError?.message);
+			return NextResponse.json(
+				{ error: "Session expired or invalid. Please sign in again." },
+				{ status: 401 },
+			);
 		}
 
 		const body = await request.json();
@@ -39,7 +62,7 @@ export async function POST(request: NextRequest) {
 		const { data: existing } = await adminClient
 			.from("rsvp_submissions")
 			.select("id")
-			.eq("user_id", session.user_id)
+			.eq("user_id", user.id)
 			.maybeSingle();
 
 		if (existing) {
@@ -66,8 +89,8 @@ export async function POST(request: NextRequest) {
 		const { error: insertError } = await adminClient
 			.from("rsvp_submissions")
 			.insert({
-				user_id: session.user_id,
-				email: session.email ?? "",
+				user_id: user.id,
+				email: user.email ?? cookieSession.email ?? "",
 				participating,
 				downtown,
 			});
