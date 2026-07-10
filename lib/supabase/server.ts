@@ -1,6 +1,11 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+/**
+ * Creates a regular Supabase client for server-side use.
+ * If a session cookie is present, it injects the access token
+ * so that RLS policies see the authenticated user.
+ */
 export async function createClient() {
 	const cookieStore = await cookies();
 	const sessionCookie = cookieStore.get("sh_session");

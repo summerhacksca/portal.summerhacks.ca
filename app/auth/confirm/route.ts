@@ -1,20 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 import { type EmailOtpType } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
 	console.log("[auth/confirm] received request", request.url);
 
 	const { searchParams } = new URL(request.url);
+	const code = searchParams.get("code");
 	const tokenHash = searchParams.get("token_hash");
 	const type = searchParams.get("type") as EmailOtpType | null;
-	const next = searchParams.get("next") ?? "/rsvp";
-	const safeNext = next.startsWith("/") ? next : "/rsvp";
-	const origin = "https://portal.summerhacks.ca";
 
-	console.log("[auth/confirm] params", { tokenHash: !!tokenHash, type, next: safeNext });
+	console.log("[auth/confirm] params", { code: !!code, tokenHash: !!tokenHash, type });
 
-	// Use implicit flow so the magic link sends token_hash (not PKCE code)
+	// Client for both implicit (token_hash) and PKCE (code) fallback
 	const supabase = createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,9 +21,21 @@ export async function GET(request: Request) {
 
 	let session = null;
 
-	// With implicit flow, the magic link delivers token_hash + type
-	if (tokenHash && type) {
-		console.log("[auth/confirm] trying verifyOtp");
+	// Try PKCE flow first (code parameter)
+	if (code) {
+		console.log("[auth/confirm] trying exchangeCodeForSession (PKCE)");
+		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+		if (error) {
+			console.log("[auth/confirm] exchangeCodeForSession error:", error.message);
+		} else {
+			console.log("[auth/confirm] exchangeCodeForSession success, user:", data.session?.user?.email);
+			session = data.session;
+		}
+	}
+
+	// Fall back to implicit flow (token_hash parameter)
+	if (!session && tokenHash && type) {
+		console.log("[auth/confirm] trying verifyOtp (implicit)");
 		const { data, error } = await supabase.auth.verifyOtp({
 			type,
 			token_hash: tokenHash,
@@ -38,6 +48,7 @@ export async function GET(request: Request) {
 		}
 	}
 
+	// Last-resort fallback
 	if (!session) {
 		console.log("[auth/confirm] trying getSession fallback");
 		const { data } = await supabase.auth.getSession();
@@ -47,11 +58,12 @@ export async function GET(request: Request) {
 		}
 	}
 
+	const origin = "https://portal.summerhacks.ca";
+	const redirectTo = session ? `${origin}/rsvp` : `${origin}/rsvp/login`;
 	console.log("[auth/confirm] session found:", !!session);
-	console.log("[auth/confirm] redirecting to", session ? `${origin}${safeNext}` : `${origin}/rsvp/login`);
+	console.log("[auth/confirm] redirecting to", redirectTo);
 
-	const redirectUrl = session ? `${origin}${safeNext}` : `${origin}/rsvp/login`;
-	const response = NextResponse.redirect(redirectUrl);
+	const response = NextResponse.redirect(redirectTo);
 
 	if (session) {
 		const cookieValue = JSON.stringify({

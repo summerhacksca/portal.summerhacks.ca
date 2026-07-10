@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Use a separate anon-key client for auth operations
+		// Use implicit flow so the magic link sends token_hash (not PKCE code).
+		// This avoids needing @supabase/ssr to persist a PKCE verifier cookie.
 		const authClient = createClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
 			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
 		const { error } = await authClient.auth.signInWithOtp({
 			email: normalizedEmail,
 			options: {
-				emailRedirectTo: `https://portal.summerhacks.ca/auth/confirm?next=/rsvp`,
+				emailRedirectTo: `https://portal.summerhacks.ca/auth/confirm`,
 			},
 		});
 
