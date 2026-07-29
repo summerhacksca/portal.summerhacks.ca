@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const origin = "https://portal.summerhacks.ca";
-	const redirectTo = session ? `${origin}/rsvp` : `${origin}/rsvp/login`;
+	const redirectTo = session ? `${origin}/portal` : `${origin}/portal/login`;
 	console.log("[auth/confirm] session found:", !!session);
 	console.log("[auth/confirm] redirecting to", redirectTo);
 

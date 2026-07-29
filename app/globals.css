@@ -3,6 +3,49 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ===== SummerHacks design tokens (Hacker Portal Design/_ds/.../tokens) ===== */
+  /* base neutrals */
+  --base-0: #ffffff;
+  --base-800: #2a2a2a;
+  --base-900: #000000;
+  /* sun / primary warm scale */
+  --sun-50: #fffbf6;
+  --sun-100: #ffefdd;
+  --sun-300: #fdb869;
+  --sun-400: #b07f46;
+  /* accents */
+  --orange: #ff8800;
+  --sky-100: #daf6ff;
+  --terracotta: #bd3c3c;
+  --green: #8fc200;
+  --blue: #477eff;
+  --blue-2: #1e6b9f;
+  --yellow: #fec906;
+  --purple: #a172ff;
+  --red: #ff585b;
+  /* semantic aliases */
+  --surface-page: var(--sun-50);
+  --surface-card: var(--base-0);
+  --surface-community: var(--terracotta);
+  --surface-pill: var(--sun-100);
+  --text-brand-accent: var(--sun-400);
+  --link-color: var(--sun-400);
+  --link-hover-color: var(--orange);
+  /* tracking — the brand runs consistently tight/negative */
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.04em;
+  --tracking-tightest: -0.06em;
+  /* radius + shadow */
+  --radius-sm: 4px;
+  --radius-pill: 100px;
+  --shadow-card: 0 8px 50px 0 rgba(0, 0, 0, 0.05);
+  --shadow-pop: 0 20px 50px 0 rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 20px 0 rgba(0, 0, 0, 0.25);
+  /* fonts */
+  --font-display: "Maison Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Maison Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 @font-face {
@@ -44,8 +87,43 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-base-0: var(--base-0);
+  --color-base-800: var(--base-800);
+  --color-base-900: var(--base-900);
+  --color-sun-50: var(--sun-50);
+  --color-sun-100: var(--sun-100);
+  --color-sun-300: var(--sun-300);
+  --color-sun-400: var(--sun-400);
+  --color-orange: var(--orange);
+  --color-sky-100: var(--sky-100);
+  --color-terracotta: var(--terracotta);
+  --color-green: var(--green);
+  --color-blue: var(--blue);
+  --color-blue-2: var(--blue-2);
+  --color-yellow: var(--yellow);
+  --color-purple: var(--purple);
+  --color-red: var(--red);
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-community: var(--surface-community);
+  --color-surface-pill: var(--surface-pill);
+  --color-text-brand-accent: var(--text-brand-accent);
+
+  --radius-sm: var(--radius-sm);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-glow: var(--shadow-glow);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --tracking-tight: var(--tracking-tight);
+  --tracking-tighter: var(--tracking-tighter);
+  --tracking-tightest: var(--tracking-tightest);
 }
 
 @media (prefers-color-scheme: dark) {
