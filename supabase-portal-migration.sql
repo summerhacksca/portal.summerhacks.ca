@@ -1,13 +1,35 @@
 -- Run this SQL in your Supabase Dashboard → SQL Editor
 -- This creates the tables needed for the event-day Hacker Portal
--- (Home, Schedule, Venue Map, Sponsors, Profile, Help Desk).
+-- (Home, Schedule, Venue Map, Sponsors, Profile, Help Desk)
+-- in their own `portal` schema, rather than `public`.
 --
--- Existing tables (application_submissions, rsvp_submissions) are untouched.
+-- Existing tables (public.application_submissions, public.rsvp_submissions) are untouched.
+--
+-- IMPORTANT — after running this, you must also:
+--   1. Dashboard → Project Settings → Data API → "Exposed schemas" → add `portal`.
+--      (PostgREST only serves schemas on this list; without it every request
+--      will fail with "The schema must be one of the following: public, ...")
+--   2. Dashboard → Project Settings → Data API → "Reload schema cache".
 
 -- =========================================================
--- profiles — one row per hacker, keyed to auth.users
+-- Schema + grants
+-- RLS below still governs per-row access; these grants just let
+-- PostgREST reach the schema/tables at all (Supabase's `public`
+-- schema gets this by default — a custom schema does not).
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE SCHEMA IF NOT EXISTS portal;
+
+GRANT USAGE ON SCHEMA portal TO anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA portal
+	GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA portal
+	GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
+-- =========================================================
+-- portal.profiles — one row per hacker, keyed to auth.users
+-- =========================================================
+CREATE TABLE IF NOT EXISTS portal.profiles (
 	user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
 	email text NOT NULL,
 	full_name text NOT NULL DEFAULT '',
@@ -21,25 +43,28 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 	updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can read own profile" ON public.profiles
+CREATE POLICY "Users can read own profile" ON portal.profiles
 	FOR SELECT TO authenticated
 	USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own profile" ON public.profiles
+CREATE POLICY "Users can insert own profile" ON portal.profiles
 	FOR INSERT TO authenticated
 	WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own profile" ON public.profiles
+CREATE POLICY "Users can update own profile" ON portal.profiles
 	FOR UPDATE TO authenticated
 	USING (auth.uid() = user_id)
 	WITH CHECK (auth.uid() = user_id);
 
+GRANT SELECT, INSERT, UPDATE ON portal.profiles TO authenticated;
+GRANT ALL ON portal.profiles TO service_role;
+
 -- =========================================================
--- tracks — canonical track list (profile selector, sponsor badges)
+-- portal.tracks — canonical track list (profile selector, sponsor badges)
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.tracks (
+CREATE TABLE IF NOT EXISTS portal.tracks (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	name text NOT NULL,
 	slug text NOT NULL UNIQUE,
@@ -48,16 +73,19 @@ CREATE TABLE IF NOT EXISTS public.tracks (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.tracks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.tracks ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read tracks" ON public.tracks
+CREATE POLICY "Authenticated users can read tracks" ON portal.tracks
 	FOR SELECT TO authenticated
 	USING (true);
 
+GRANT SELECT ON portal.tracks TO authenticated;
+GRANT ALL ON portal.tracks TO service_role;
+
 -- =========================================================
--- sponsors — Sponsor Board cards
+-- portal.sponsors — Sponsor Board cards
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.sponsors (
+CREATE TABLE IF NOT EXISTS portal.sponsors (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	name text NOT NULL,
 	track text NOT NULL,
@@ -68,16 +96,19 @@ CREATE TABLE IF NOT EXISTS public.sponsors (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.sponsors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.sponsors ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read sponsors" ON public.sponsors
+CREATE POLICY "Authenticated users can read sponsors" ON portal.sponsors
 	FOR SELECT TO authenticated
 	USING (true);
 
+GRANT SELECT ON portal.sponsors TO authenticated;
+GRANT ALL ON portal.sponsors TO service_role;
+
 -- =========================================================
--- schedule_events — Master Schedule
+-- portal.schedule_events — Master Schedule
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.schedule_events (
+CREATE TABLE IF NOT EXISTS portal.schedule_events (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	starts_at timestamptz NOT NULL,
 	title text NOT NULL,
@@ -87,18 +118,21 @@ CREATE TABLE IF NOT EXISTS public.schedule_events (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.schedule_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.schedule_events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read schedule" ON public.schedule_events
+CREATE POLICY "Authenticated users can read schedule" ON portal.schedule_events
 	FOR SELECT TO authenticated
 	USING (true);
 
-CREATE INDEX IF NOT EXISTS idx_schedule_events_starts_at ON public.schedule_events(starts_at);
+CREATE INDEX IF NOT EXISTS idx_schedule_events_starts_at ON portal.schedule_events(starts_at);
+
+GRANT SELECT ON portal.schedule_events TO authenticated;
+GRANT ALL ON portal.schedule_events TO service_role;
 
 -- =========================================================
--- announcements — Home "Live announcements"
+-- portal.announcements — Home "Live announcements"
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.announcements (
+CREATE TABLE IF NOT EXISTS portal.announcements (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	channel text NOT NULL,
 	body text NOT NULL,
@@ -106,16 +140,19 @@ CREATE TABLE IF NOT EXISTS public.announcements (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.announcements ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read announcements" ON public.announcements
+CREATE POLICY "Authenticated users can read announcements" ON portal.announcements
 	FOR SELECT TO authenticated
 	USING (true);
 
+GRANT SELECT ON portal.announcements TO authenticated;
+GRANT ALL ON portal.announcements TO service_role;
+
 -- =========================================================
--- map_zones — Venue Map legend
+-- portal.map_zones — Venue Map legend
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.map_zones (
+CREATE TABLE IF NOT EXISTS portal.map_zones (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	name text NOT NULL,
 	description text NOT NULL,
@@ -124,16 +161,19 @@ CREATE TABLE IF NOT EXISTS public.map_zones (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.map_zones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.map_zones ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read map zones" ON public.map_zones
+CREATE POLICY "Authenticated users can read map zones" ON portal.map_zones
 	FOR SELECT TO authenticated
 	USING (true);
 
+GRANT SELECT ON portal.map_zones TO authenticated;
+GRANT ALL ON portal.map_zones TO service_role;
+
 -- =========================================================
--- faq_items — Help Desk FAQ
+-- portal.faq_items — Help Desk FAQ
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.faq_items (
+CREATE TABLE IF NOT EXISTS portal.faq_items (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	question text NOT NULL,
 	answer text NOT NULL,
@@ -141,16 +181,19 @@ CREATE TABLE IF NOT EXISTS public.faq_items (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.faq_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.faq_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read FAQ" ON public.faq_items
+CREATE POLICY "Authenticated users can read FAQ" ON portal.faq_items
 	FOR SELECT TO authenticated
 	USING (true);
 
+GRANT SELECT ON portal.faq_items TO authenticated;
+GRANT ALL ON portal.faq_items TO service_role;
+
 -- =========================================================
--- help_contacts — Help Desk "Who do I ask?" directory
+-- portal.help_contacts — Help Desk "Who do I ask?" directory
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.help_contacts (
+CREATE TABLE IF NOT EXISTS portal.help_contacts (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	topic text NOT NULL,
 	contact text NOT NULL,
@@ -159,18 +202,21 @@ CREATE TABLE IF NOT EXISTS public.help_contacts (
 	created_at timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE public.help_contacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal.help_contacts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read help contacts" ON public.help_contacts
+CREATE POLICY "Authenticated users can read help contacts" ON portal.help_contacts
 	FOR SELECT TO authenticated
 	USING (true);
+
+GRANT SELECT ON portal.help_contacts TO authenticated;
+GRANT ALL ON portal.help_contacts TO service_role;
 
 -- =========================================================
 -- Seed data (ported from the Hacker Portal design mockup)
 -- Event weekend: Sat Aug 8 (online) – Sun Aug 9 (in-person), Toronto (EDT, UTC-4)
 -- =========================================================
 
-INSERT INTO public.tracks (name, slug, accent_color, sort_order) VALUES
+INSERT INTO portal.tracks (name, slug, accent_color, sort_order) VALUES
 	('Sustainability', 'sustainability', 'var(--green)', 1),
 	('AI/ML', 'ai-ml', 'var(--purple)', 2),
 	('Fintech', 'fintech', 'var(--blue)', 3),
@@ -181,7 +227,7 @@ INSERT INTO public.tracks (name, slug, accent_color, sort_order) VALUES
 	('Education', 'education', 'var(--orange)', 8)
 ON CONFLICT (slug) DO NOTHING;
 
-INSERT INTO public.sponsors (name, track, challenge, prize, sort_order) VALUES
+INSERT INTO portal.sponsors (name, track, challenge, prize, sort_order) VALUES
 	('Nimbus Cloud', 'Infrastructure', 'Build a tool that makes cloud costs visible and understandable for small teams.', '$1,500 + mentorship', 1),
 	('Fenwick Robotics', 'Hardware', 'Prototype a sensor-driven fix for a real-world accessibility problem.', '$1,200 + dev kits', 2),
 	('BrightLedger', 'Fintech', 'Design a safer way for students to split and track shared expenses.', '$1,000 cash', 3),
@@ -196,7 +242,7 @@ INSERT INTO public.sponsors (name, track, challenge, prize, sort_order) VALUES
 	('Cedar & Co', 'Education', 'Design a tool that makes group study sessions actually stick.', '$700 cash', 12),
 	('Trailhead Robotics', 'Hardware', 'Best use of a microcontroller kit to solve an everyday annoyance.', '$1,000 + dev kits', 13);
 
-INSERT INTO public.schedule_events (starts_at, title, type, location, sort_order) VALUES
+INSERT INTO portal.schedule_events (starts_at, title, type, location, sort_order) VALUES
 	-- Day 1 · Sat Aug 8 · Online
 	('2026-08-08T10:00:00-04:00', 'Opening ceremony (livestream)', 'Ceremony', 'All tracks · Zoom A', 1),
 	('2026-08-08T11:00:00-04:00', 'Workshop: Intro to APIs', 'Workshop', 'Zoom A', 2),
@@ -217,13 +263,13 @@ INSERT INTO public.schedule_events (starts_at, title, type, location, sort_order
 	('2026-08-09T18:00:00-04:00', 'Closing ceremony + awards', 'Ceremony', 'Main Stage', 16),
 	('2026-08-09T19:00:00-04:00', 'Dinner + send-off', 'Meal', 'The Yard', 17);
 
-INSERT INTO public.announcements (channel, body, accent, created_at) VALUES
+INSERT INTO portal.announcements (channel, body, accent, created_at) VALUES
 	('announcements', 'Breakfast is live in The Yard until 9:30 — grab something before workshops start.', 'var(--orange)', now() - interval '18 minutes'),
 	('announcements', 'Sponsor booths in Market Hall open at 11:30. Bring questions for Fenwick Robotics and Cobalt Systems.', 'rgba(42,42,42,0.1)', now() - interval '50 minutes'),
 	('logistics', 'Wifi network is "SummerHacks-Guest", password is on your lanyard.', 'rgba(42,42,42,0.1)', now() - interval '85 minutes'),
 	('announcements', 'Reminder: submissions lock at 2:00 PM sharp on Agorize. No late submissions.', 'rgba(42,42,42,0.1)', now() - interval '120 minutes');
 
-INSERT INTO public.map_zones (name, description, color, sort_order) VALUES
+INSERT INTO portal.map_zones (name, description, color, sort_order) VALUES
 	('Main Stage', 'Opening/closing ceremonies, judging finals', 'var(--orange)', 1),
 	('The Yard', 'Meals, outdoor lounge, team formation mixer', 'var(--green)', 2),
 	('Container Row A', 'Workshops, judging round 1', 'var(--sun-300)', 3),
@@ -233,7 +279,7 @@ INSERT INTO public.map_zones (name, description, color, sort_order) VALUES
 	('Registration / check-in', 'QR check-in desk, volunteer help', 'var(--terracotta)', 7),
 	('Washrooms', 'Near Container Row A and The Yard', 'var(--sun-400)', 8);
 
-INSERT INTO public.faq_items (question, answer, sort_order) VALUES
+INSERT INTO portal.faq_items (question, answer, sort_order) VALUES
 	('How do I check in?', 'Show the QR code on your profile at the registration desk near Main Stage. A volunteer will scan you in.', 1),
 	('Where do I submit my project?', 'All submissions go through Agorize — use the Submit link in the header. Submissions lock at 2:00 PM Sunday.', 2),
 	('What if my team is incomplete?', 'Post in #team-formation on Discord any time before Sunday morning — plenty of solo hackers are looking too.', 3),
@@ -242,7 +288,7 @@ INSERT INTO public.faq_items (question, answer, sort_order) VALUES
 	('Is there a quiet space?', 'Yes — the Quiet Room in Container Row C is a low-stimulation space, open all day.', 6),
 	('What do I do about a technical issue?', 'Post in #tech-help on Discord, or flag down any volunteer wearing an orange lanyard.', 7);
 
-INSERT INTO public.help_contacts (topic, contact, location, sort_order) VALUES
+INSERT INTO portal.help_contacts (topic, contact, location, sort_order) VALUES
 	('General questions', 'Volunteers (orange lanyards)', '#general-help on Discord, or anywhere on-site', 1),
 	('Sponsor challenges & prizes', 'Sponsor booth reps', 'Market Hall, 11:30 AM–5:30 PM', 2),
 	('Judging & submissions', 'Judging captains', 'Container Row A/B, or #judging on Discord', 3),

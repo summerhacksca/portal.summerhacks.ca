@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 		}
 	}
 
-	const origin = "https://portal.summerhacks.ca";
+	const origin = new URL(request.url).origin;
 	const redirectTo = session ? `${origin}/portal` : `${origin}/portal/login`;
 	console.log("[auth/confirm] session found:", !!session);
 	console.log("[auth/confirm] redirecting to", redirectTo);
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 			path: "/",
 			httpOnly: true,
 			sameSite: "lax",
-			secure: true,
+			secure: origin.startsWith("https://"),
 			maxAge: 60 * 60 * 24 * 7,
 		});
 	} else {

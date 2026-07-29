@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 		// Use admin client for DB lookup (bypasses RLS)
 		const adminClient = createClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
-			process.env.SUPABASE_SERVICE_ROLE_KEY!,
+			process.env.SUPABASE_SECRET_KEY!,
 		);
 
 		// Check if the applicant exists and was accepted
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 		const { error } = await supabase.auth.signInWithOtp({
 			email: normalizedEmail,
 			options: {
-				emailRedirectTo: `https://portal.summerhacks.ca/auth/confirm`,
+				emailRedirectTo: `${request.nextUrl.origin}/auth/confirm`,
 			},
 		});
 
