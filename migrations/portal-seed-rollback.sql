@@ -1,5 +1,5 @@
 -- Run this SQL in your Supabase Dashboard → SQL Editor to remove the seed
--- rows inserted by supabase-portal-migration.sql, without dropping the
+-- rows inserted by 0002_portal_tables.sql, without dropping the
 -- tables themselves.
 --
 -- Does NOT touch public.profiles (hacker-owned data) or
@@ -48,6 +48,7 @@ DELETE FROM public.sponsors WHERE name IN (
 );
 
 DELETE FROM public.schedule_events WHERE (starts_at, title) IN (
+	('2026-08-09T07:45:00-04:00', 'Registration / check-in'),
 	('2026-08-08T10:00:00-04:00', 'Opening ceremony (livestream)'),
 	('2026-08-08T11:00:00-04:00', 'Workshop: Intro to APIs'),
 	('2026-08-08T12:30:00-04:00', 'Team formation mixer'),

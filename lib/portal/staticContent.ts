@@ -10,7 +10,7 @@ export const FAQ_ITEMS: FaqItem[] = [
 		id: "check-in",
 		question: "How do I check in?",
 		answer:
-			"Show the QR code on your profile at the registration desk near Main Stage. A volunteer will scan you in.",
+			"Tap “Show my QR” on your profile and hold the code up at the registration desk near Main Stage — a volunteer scans you in. If you picked up an NFC tag, tapping it does the same thing. You'll also be scanned before each meal.",
 		sort_order: 1,
 	},
 	{

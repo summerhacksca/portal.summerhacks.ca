@@ -132,7 +132,7 @@ GRANT EXECUTE ON FUNCTION public.set_user_role(uuid, public.user_role) TO servic
 
 -- =========================================================
 -- Portal RLS — require hacker / volunteer / organizer
--- (run after supabase-portal-migration.sql)
+-- (run after 0002_portal_tables.sql)
 -- =========================================================
 
 -- profiles

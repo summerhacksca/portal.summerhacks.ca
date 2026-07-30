@@ -29,10 +29,17 @@ export async function createClient(collectInto?: SupabaseCookie[]) {
         setAll(cookiesToSet) {
           if (collectInto) {
             cookiesToSet.forEach((c) => collectInto.push(c));
-          } else {
+            return;
+          }
+
+          try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
+          } catch {
+            // Called from a Server Component (e.g. layout). Cookie writes are
+            // only allowed in Server Actions and Route Handlers — proxy.ts
+            // refreshes the session before the page renders.
           }
         },
       },

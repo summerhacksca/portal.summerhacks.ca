@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { canAccessAdmin, canAccessPortal, getRoleFromAccessToken } from "@/lib/auth/roles";
 import { parseShSession } from "@/lib/auth/session";
+import { mergeSupabaseResponse, updateSupabaseSession } from "@/lib/supabase/proxy";
 
 function getSessionRole(request: NextRequest) {
   const session = parseShSession(request.cookies.get("sh_session")?.value);
@@ -14,6 +15,10 @@ function getSessionRole(request: NextRequest) {
 }
 
 export async function proxy(request: NextRequest) {
+  const supabaseResponse = await updateSupabaseSession(request);
+  const redirect = (url: URL | string) =>
+    mergeSupabaseResponse(supabaseResponse, NextResponse.redirect(url));
+
   const { pathname } = request.nextUrl;
   const { session, role } = getSessionRole(request);
   const isAuthenticated = !!session;
@@ -22,7 +27,7 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/rsvp") {
     if (!isAuthenticated) {
       const loginUrl = new URL("/rsvp/login", request.url);
-      return NextResponse.redirect(loginUrl);
+      return redirect(loginUrl);
     }
   }
 
@@ -30,7 +35,7 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/rsvp/login") {
     if (isAuthenticated) {
       const rsvpUrl = new URL("/rsvp", request.url);
-      return NextResponse.redirect(rsvpUrl);
+      return redirect(rsvpUrl);
     }
   }
 
@@ -43,18 +48,18 @@ export async function proxy(request: NextRequest) {
   if (isPortalRoute) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/portal/login", request.url);
-      return NextResponse.redirect(loginUrl);
+      return redirect(loginUrl);
     }
 
     if (!canAccessPortal(role!)) {
       const unauthorizedUrl = new URL("/portal/unauthorized", request.url);
-      return NextResponse.redirect(unauthorizedUrl);
+      return redirect(unauthorizedUrl);
     }
   }
 
   if (isPortalLogin && isAuthenticated) {
     const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
-    return NextResponse.redirect(new URL(destination, request.url));
+    return redirect(new URL(destination, request.url));
   }
 
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -62,16 +67,16 @@ export async function proxy(request: NextRequest) {
   if (isAdminRoute) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/portal/login", request.url);
-      return NextResponse.redirect(loginUrl);
+      return redirect(loginUrl);
     }
 
     if (!canAccessAdmin(role!)) {
       const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
-      return NextResponse.redirect(new URL(destination, request.url));
+      return redirect(new URL(destination, request.url));
     }
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {

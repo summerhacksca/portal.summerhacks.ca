@@ -1,6 +1,7 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { canAccessPortal, getRoleFromAppMetadata } from "@/lib/auth/roles";
+import { getSiteUrl } from "@/lib/portal/siteUrl";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = getSiteUrl();
   const role = session ? getRoleFromAppMetadata(session.user.app_metadata) : null;
   const redirectTo = !session
     ? `${origin}/portal/login`

@@ -10,4 +10,5 @@ export const EVENT_TYPE_COLOR: Record<ScheduleEventType, string> = {
 	Meal: "var(--green)",
 	Expo: "var(--blue)",
 	Judging: "var(--purple)",
+	Registration: "var(--terracotta)",
 };
