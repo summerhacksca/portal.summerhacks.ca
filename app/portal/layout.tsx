@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PortalFooter } from "@/components/portal/PortalFooter";
 import { PortalHeader } from "@/components/portal/PortalHeader";
-import { getOrCreateProfile } from "@/lib/portal/queries";
+import { getProfile } from "@/lib/portal/queries";
 
 export const metadata: Metadata = {
 	title: "Hacker Portal · SummerHacks",
@@ -15,7 +15,7 @@ export default async function PortalLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	const profile = await getOrCreateProfile();
+	const profile = await getProfile();
 
 	return (
 		<div className="flex min-h-screen flex-col bg-surface-page">

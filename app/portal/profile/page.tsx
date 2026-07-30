@@ -7,7 +7,7 @@ import { getCheckinQr } from "@/lib/portal/checkinQr";
 import {
   getCheckinEvents,
   getMyCheckins,
-  getOrCreateProfile,
+  getProfile,
   getTracks,
   isCheckedInAtRegistration,
 } from "@/lib/portal/queries";
@@ -21,7 +21,7 @@ function initials(name: string) {
 
 export default async function ProfilePage() {
   const [profile, allTracks, checkins, checkinEvents] = await Promise.all([
-    getOrCreateProfile(),
+    getProfile(),
     getTracks(),
     getMyCheckins(),
     getCheckinEvents(),

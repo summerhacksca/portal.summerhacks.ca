@@ -6,7 +6,7 @@ import { getCheckinQr } from "@/lib/portal/checkinQr";
 import {
   getAnnouncements,
   getMyCheckins,
-  getOrCreateProfile,
+  getProfile,
   getSchedule,
   isCheckedInAtRegistration,
 } from "@/lib/portal/queries";
@@ -31,7 +31,7 @@ function formatEventTime(iso: string) {
 
 export default async function PortalHomePage() {
   const [profile, announcements, schedule, checkins] = await Promise.all([
-    getOrCreateProfile(),
+    getProfile(),
     getAnnouncements(),
     getSchedule(),
     getMyCheckins(),
