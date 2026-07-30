@@ -31,7 +31,6 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
 	if (!user) return null;
 
 	const { data: existing, error: readError } = await supabase
-		.schema("portal")
 		.from("profiles")
 		.select("*")
 		.eq("user_id", user.id)
@@ -50,7 +49,6 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
 		"";
 
 	const { data: created, error: insertError } = await supabase
-		.schema("portal")
 		.from("profiles")
 		.insert({
 			user_id: user.id,
@@ -71,7 +69,6 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
 export async function getTracks(): Promise<Track[]> {
 	const supabase = await createClient();
 	const { data, error } = await supabase
-		.schema("portal")
 		.from("tracks")
 		.select("*")
 		.order("sort_order", { ascending: true });
@@ -86,7 +83,6 @@ export async function getTracks(): Promise<Track[]> {
 export async function getSponsors(): Promise<Sponsor[]> {
 	const supabase = await createClient();
 	const { data, error } = await supabase
-		.schema("portal")
 		.from("sponsors")
 		.select("*")
 		.order("sort_order", { ascending: true });
@@ -101,7 +97,6 @@ export async function getSponsors(): Promise<Sponsor[]> {
 export async function getSchedule(): Promise<ScheduleEvent[]> {
 	const supabase = await createClient();
 	const { data, error } = await supabase
-		.schema("portal")
 		.from("schedule_events")
 		.select("*")
 		.order("starts_at", { ascending: true });
@@ -116,7 +111,6 @@ export async function getSchedule(): Promise<ScheduleEvent[]> {
 export async function getAnnouncements(): Promise<Announcement[]> {
 	const supabase = await createClient();
 	const { data, error } = await supabase
-		.schema("portal")
 		.from("announcements")
 		.select("*")
 		.order("created_at", { ascending: false });
@@ -131,7 +125,6 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 export async function getMapZones(): Promise<MapZone[]> {
 	const supabase = await createClient();
 	const { data, error } = await supabase
-		.schema("portal")
 		.from("map_zones")
 		.select("*")
 		.order("sort_order", { ascending: true });

@@ -20,7 +20,6 @@ export async function updateProfile(formData: FormData) {
 	const tracks = formData.getAll("tracks").map((t) => String(t));
 
 	const { error } = await supabase
-		.schema("portal")
 		.from("profiles")
 		.update({
 			full_name: fullName,
@@ -51,7 +50,6 @@ export async function toggleCheckin() {
 	}
 
 	const { data: profile, error: readError } = await supabase
-		.schema("portal")
 		.from("profiles")
 		.select("checked_in")
 		.eq("user_id", user.id)
@@ -65,7 +63,6 @@ export async function toggleCheckin() {
 	const nextCheckedIn = !profile?.checked_in;
 
 	const { error: updateError } = await supabase
-		.schema("portal")
 		.from("profiles")
 		.update({
 			checked_in: nextCheckedIn,
