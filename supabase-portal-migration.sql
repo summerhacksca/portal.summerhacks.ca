@@ -171,48 +171,9 @@ GRANT SELECT ON portal.map_zones TO authenticated;
 GRANT ALL ON portal.map_zones TO service_role;
 
 -- =========================================================
--- portal.faq_items — Help Desk FAQ
--- =========================================================
-CREATE TABLE IF NOT EXISTS portal.faq_items (
-	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	question text NOT NULL,
-	answer text NOT NULL,
-	sort_order int NOT NULL DEFAULT 0,
-	created_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE portal.faq_items ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users can read FAQ" ON portal.faq_items
-	FOR SELECT TO authenticated
-	USING (true);
-
-GRANT SELECT ON portal.faq_items TO authenticated;
-GRANT ALL ON portal.faq_items TO service_role;
-
--- =========================================================
--- portal.help_contacts — Help Desk "Who do I ask?" directory
--- =========================================================
-CREATE TABLE IF NOT EXISTS portal.help_contacts (
-	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	topic text NOT NULL,
-	contact text NOT NULL,
-	location text NOT NULL,
-	sort_order int NOT NULL DEFAULT 0,
-	created_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE portal.help_contacts ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users can read help contacts" ON portal.help_contacts
-	FOR SELECT TO authenticated
-	USING (true);
-
-GRANT SELECT ON portal.help_contacts TO authenticated;
-GRANT ALL ON portal.help_contacts TO service_role;
-
--- =========================================================
 -- Seed data (ported from the Hacker Portal design mockup)
+-- FAQ and "Who do I ask?" directory are hardcoded in the app
+-- (see lib/portal/staticContent.ts) rather than stored here.
 -- Event weekend: Sat Aug 8 (online) – Sun Aug 9 (in-person), Toronto (EDT, UTC-4)
 -- =========================================================
 
@@ -278,20 +239,3 @@ INSERT INTO portal.map_zones (name, description, color, sort_order) VALUES
 	('Quiet Room', 'Container Row C — low-stimulation rest space', 'var(--purple)', 6),
 	('Registration / check-in', 'QR check-in desk, volunteer help', 'var(--terracotta)', 7),
 	('Washrooms', 'Near Container Row A and The Yard', 'var(--sun-400)', 8);
-
-INSERT INTO portal.faq_items (question, answer, sort_order) VALUES
-	('How do I check in?', 'Show the QR code on your profile at the registration desk near Main Stage. A volunteer will scan you in.', 1),
-	('Where do I submit my project?', 'All submissions go through Agorize — use the Submit link in the header. Submissions lock at 2:00 PM Sunday.', 2),
-	('What if my team is incomplete?', 'Post in #team-formation on Discord any time before Sunday morning — plenty of solo hackers are looking too.', 3),
-	('Can I switch sponsor challenges or tracks?', 'Yes, any time before the submission lock. Just update your profile and mention it to a judge at judging.', 4),
-	('Where can I find food?', 'The Yard, at the meal times listed on the schedule. Dietary accommodations are available at the same table.', 5),
-	('Is there a quiet space?', 'Yes — the Quiet Room in Container Row C is a low-stimulation space, open all day.', 6),
-	('What do I do about a technical issue?', 'Post in #tech-help on Discord, or flag down any volunteer wearing an orange lanyard.', 7);
-
-INSERT INTO portal.help_contacts (topic, contact, location, sort_order) VALUES
-	('General questions', 'Volunteers (orange lanyards)', '#general-help on Discord, or anywhere on-site', 1),
-	('Sponsor challenges & prizes', 'Sponsor booth reps', 'Market Hall, 11:30 AM–5:30 PM', 2),
-	('Judging & submissions', 'Judging captains', 'Container Row A/B, or #judging on Discord', 3),
-	('Wifi / tech issues', 'Tech volunteers', '#tech-help on Discord', 4),
-	('Medical / safety', 'On-site first aid', 'Registration desk, Main Stage', 5),
-	('Team formation', 'Organizer team', '#team-formation on Discord', 6);

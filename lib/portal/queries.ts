@@ -2,8 +2,6 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type {
 	Announcement,
-	FaqItem,
-	HelpContact,
 	MapZone,
 	Profile,
 	ScheduleEvent,
@@ -145,32 +143,3 @@ export async function getMapZones(): Promise<MapZone[]> {
 	return data as MapZone[];
 }
 
-export async function getFaq(): Promise<FaqItem[]> {
-	const supabase = await createClient();
-	const { data, error } = await supabase
-		.schema("portal")
-		.from("faq_items")
-		.select("*")
-		.order("sort_order", { ascending: true });
-
-	if (error) {
-		console.error("Failed to fetch FAQ:", error);
-		return [];
-	}
-	return data as FaqItem[];
-}
-
-export async function getDirectory(): Promise<HelpContact[]> {
-	const supabase = await createClient();
-	const { data, error } = await supabase
-		.schema("portal")
-		.from("help_contacts")
-		.select("*")
-		.order("sort_order", { ascending: true });
-
-	if (error) {
-		console.error("Failed to fetch help directory:", error);
-		return [];
-	}
-	return data as HelpContact[];
-}

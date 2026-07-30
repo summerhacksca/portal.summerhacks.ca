@@ -1,9 +1,10 @@
 import { FaqAccordion } from "@/components/portal/FaqAccordion";
 import { SectionHeader } from "@/components/portal/ui/SectionHeader";
-import { getDirectory, getFaq } from "@/lib/portal/queries";
+import { FAQ_ITEMS, HELP_CONTACTS } from "@/lib/portal/staticContent";
 
-export default async function HelpPage() {
-	const [faq, directory] = await Promise.all([getFaq(), getDirectory()]);
+export default function HelpPage() {
+	const faq = FAQ_ITEMS;
+	const directory = HELP_CONTACTS;
 
 	return (
 		<main className="mx-auto flex w-full max-w-[1160px] flex-col gap-11 px-9 py-8 pb-20">
