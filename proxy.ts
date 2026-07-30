@@ -1,13 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { canAccessAdmin, canAccessPortal, getRoleFromAccessToken } from "@/lib/auth/roles";
+import { parseShSession } from "@/lib/auth/session";
+
+function getSessionRole(request: NextRequest) {
+  const session = parseShSession(request.cookies.get("sh_session")?.value);
+  if (!session) return { session: null, role: null };
+
+  return {
+    session,
+    role: getRoleFromAccessToken(session.access_token),
+  };
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get("sh_session");
+  const { session, role } = getSessionRole(request);
+  const isAuthenticated = !!session;
 
   // Redirect unauthenticated users from /rsvp to /rsvp/login
   if (pathname === "/rsvp") {
-    if (!sessionCookie?.value) {
+    if (!isAuthenticated) {
       const loginUrl = new URL("/rsvp/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
@@ -15,28 +28,46 @@ export async function proxy(request: NextRequest) {
 
   // Redirect authenticated users from /rsvp/login to /rsvp
   if (pathname === "/rsvp/login") {
-    if (sessionCookie?.value) {
+    if (isAuthenticated) {
       const rsvpUrl = new URL("/rsvp", request.url);
       return NextResponse.redirect(rsvpUrl);
     }
   }
 
-  // Redirect unauthenticated users from /portal to /portal/login
-  if (
+  const isPortalLogin = pathname === "/portal/login";
+  const isPortalUnauthorized = pathname === "/portal/unauthorized";
+  const isPortalRoute =
     pathname === "/portal" ||
-    (pathname.startsWith("/portal/") && pathname !== "/portal/login")
-  ) {
-    if (!sessionCookie?.value) {
+    (pathname.startsWith("/portal/") && !isPortalLogin && !isPortalUnauthorized);
+
+  if (isPortalRoute) {
+    if (!isAuthenticated) {
       const loginUrl = new URL("/portal/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
+
+    if (!canAccessPortal(role!)) {
+      const unauthorizedUrl = new URL("/portal/unauthorized", request.url);
+      return NextResponse.redirect(unauthorizedUrl);
+    }
   }
 
-  // Redirect authenticated users from /portal/login to /portal
-  if (pathname === "/portal/login") {
-    if (sessionCookie?.value) {
-      const portalUrl = new URL("/portal", request.url);
-      return NextResponse.redirect(portalUrl);
+  if (isPortalLogin && isAuthenticated) {
+    const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
+    return NextResponse.redirect(new URL(destination, request.url));
+  }
+
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
+
+  if (isAdminRoute) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/portal/login", request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (!canAccessAdmin(role!)) {
+      const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
+      return NextResponse.redirect(new URL(destination, request.url));
     }
   }
 
@@ -44,5 +75,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/rsvp", "/rsvp/(.*)", "/portal", "/portal/(.*)"],
+  matcher: ["/rsvp", "/rsvp/(.*)", "/portal", "/portal/(.*)", "/admin", "/admin/(.*)"],
 };
