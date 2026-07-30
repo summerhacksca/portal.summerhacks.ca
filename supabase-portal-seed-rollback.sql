@@ -1,10 +1,24 @@
 -- Run this SQL in your Supabase Dashboard → SQL Editor to remove the seed
 -- rows inserted by supabase-portal-migration.sql, without dropping the
--- tables themselves. Matches on each row's distinguishing column(s) rather
--- than truncating, so it's safe even if real content was added since.
+-- tables themselves.
 --
 -- Does NOT touch public.profiles (hacker-owned data) or
 -- public.application_submissions / public.rsvp_submissions.
+
+-- =========================================================
+-- Option A — delete all rows in these content tables, no matter
+-- what's in them. Simplest option, but also wipes any real content
+-- you've since added by hand alongside the seed rows. These 5 tables
+-- are organizer-managed only (no hacker-facing write policy), so this
+-- is safe to run any time you want a clean slate before re-seeding.
+-- =========================================================
+-- TRUNCATE public.tracks, public.sponsors, public.schedule_events, public.announcements, public.map_zones;
+
+-- =========================================================
+-- Option B — delete only the known seed rows, matched by their
+-- distinguishing column(s). Safer if you've added real content
+-- alongside the seed data and want to keep it.
+-- =========================================================
 
 DELETE FROM public.tracks WHERE slug IN (
 	'sustainability',
