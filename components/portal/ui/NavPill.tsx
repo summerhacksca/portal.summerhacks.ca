@@ -7,9 +7,17 @@ export function navPillClass(active: boolean) {
 	}`;
 }
 
-/** Rounded-pill container that groups a set of nav pills (tab bar / day toggle). */
+/**
+ * Rounded-pill container that groups a set of nav pills (tab bar / day toggle).
+ *
+ * `min-w-0` is what makes the horizontal scroll work: without it this flex
+ * child refuses to shrink below its content width, so overflow-x-auto never
+ * engages and the strip pushes the rest of the header off-screen instead.
+ */
 export function NavPillGroup({ children }: { children: ReactNode }) {
 	return (
-		<nav className="flex gap-0.5 rounded-pill bg-sun-100 p-1">{children}</nav>
+		<nav className="flex min-w-0 gap-0.5 overflow-x-auto rounded-pill bg-sun-100 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+			{children}
+		</nav>
 	);
 }

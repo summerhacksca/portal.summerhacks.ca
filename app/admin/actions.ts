@@ -103,3 +103,69 @@ export async function uncheckInUser(nfcId: string, eventId: string): Promise<Che
 
 	return { success: true, message: "Check-in undone." };
 }
+
+/**
+ * Approve or reject a logged Third Space Trek photo.
+ *
+ * Rejecting is all it takes: points are derived by a window function rather
+ * than stored, so the rejected photo's points disappear AND the 2pt discovery
+ * bonus re-flows onto that team's next surviving photo at the same spot. There
+ * is nothing to recompute here.
+ */
+export async function reviewTrekSubmission(
+	submissionId: string,
+	status: "approved" | "rejected",
+	note: string,
+): Promise<CheckinResult> {
+	const { supabase, user } = await requireStaff();
+
+	const { error } = await supabase
+		.from("scavenger_submissions")
+		.update({
+			status,
+			review_note: note.trim(),
+			reviewed_by: user.id,
+			reviewed_at: new Date().toISOString(),
+		})
+		.eq("id", submissionId);
+
+	if (error) {
+		console.error("Failed to review trek submission:", error);
+		return { success: false, message: error.message };
+	}
+
+	revalidatePath("/admin", "layout");
+	revalidatePath("/portal", "layout");
+
+	return {
+		success: true,
+		message: status === "approved" ? "Approved." : "Rejected - points removed.",
+	};
+}
+
+/** Open, close or reschedule the trek. The RPC re-checks the staff role. */
+export async function updateTrekSettings(formData: FormData): Promise<CheckinResult> {
+	const { supabase } = await requireStaff();
+
+	const { error } = await supabase.rpc("scavenger_update_settings", {
+		// Raw <input type="datetime-local"> strings. The RPC reads them as
+		// Toronto wall-clock time - this project has no date library.
+		p_starts_local: String(formData.get("starts_at") ?? ""),
+		p_ends_local: String(formData.get("ends_at") ?? ""),
+		p_is_open: formData.get("is_open") === "on",
+		p_cooldown_minutes: Number(formData.get("cooldown_minutes") ?? 60),
+		p_max_team_size: Number(formData.get("max_team_size") ?? 4),
+		p_new_spot_points: Number(formData.get("new_spot_points") ?? 2),
+		p_repeat_spot_points: Number(formData.get("repeat_spot_points") ?? 1),
+	});
+
+	if (error) {
+		console.error("Failed to update trek settings:", error);
+		return { success: false, message: error.message };
+	}
+
+	revalidatePath("/admin", "layout");
+	revalidatePath("/portal", "layout");
+
+	return { success: true, message: "Settings saved." };
+}
