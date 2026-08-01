@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { getMagicLinkEligibility } from "@/lib/auth/magicLinkEligibility";
 import { getSiteUrl } from "@/lib/portal/siteUrl";
 import { createClient as createSsrClient } from "@/lib/supabase/server";
 
@@ -19,30 +20,9 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SECRET_KEY!,
     );
 
-    // Check if the applicant exists and was accepted
-    const { data: application, error: lookupError } = await adminClient
-      .from("application_submissions")
-      .select("id, status")
-      .eq("applicant_email", normalizedEmail)
-      .maybeSingle();
-
-    if (lookupError) {
-      console.error("Failed to look up applicant:", lookupError);
-      return NextResponse.json({ error: "Failed to verify applicant" }, { status: 500 });
-    }
-
-    if (!application) {
-      return NextResponse.json(
-        { error: "No application found for this email." },
-        { status: 403 },
-      );
-    }
-
-    if (application.status !== "accepted") {
-      return NextResponse.json(
-        { error: "Your application has not been accepted yet." },
-        { status: 403 },
-      );
+    const eligibility = await getMagicLinkEligibility(adminClient, normalizedEmail);
+    if (!eligibility.ok) {
+      return NextResponse.json({ error: eligibility.error }, { status: eligibility.status });
     }
 
     // Use @supabase/ssr client - PKCE flow stores the verifier in a cookie

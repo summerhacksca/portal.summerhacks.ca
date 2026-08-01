@@ -46,7 +46,7 @@ export default function PortalLoginPage() {
             Sign in to the Hacker Portal
           </h1>
           <p className="font-body text-[14px] leading-snug text-sun-400">
-            Enter the email you applied with - we&apos;ll send you a magic link to sign in.
+            Enter the email you applied with, and we&apos;ll send you a magic link to sign in.
           </p>
         </div>
 
