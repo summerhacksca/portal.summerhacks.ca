@@ -52,6 +52,8 @@ export type ScheduleEvent = {
   sort_order: number;
   /** Only meals and registration are checked into. Enforced by a DB trigger too. */
   check_in_required: boolean;
+  /** Set by app/api/events/notify/route.ts once a Discord "starting soon" embed has been sent. */
+  discord_notified: boolean;
 };
 
 /** One row per (event, hacker). Undo flips `checked_in` rather than deleting. */
