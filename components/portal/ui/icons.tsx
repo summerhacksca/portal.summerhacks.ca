@@ -1,5 +1,5 @@
 /**
- * Inline decorative glyphs from the Hacker Portal design mockup — a small
+ * Inline decorative glyphs from the Hacker Portal design mockup - a small
  * "orange" (ellipse) and "apple/pear" (leaf-topped teardrop) fruit motif
  * reused across the hero, section headers, and footer.
  */

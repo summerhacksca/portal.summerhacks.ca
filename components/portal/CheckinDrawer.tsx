@@ -87,7 +87,7 @@ export function CheckinDrawer({
 							Your check-in code
 						</h2>
 						<p className="max-w-[320px] font-body text-[13px] leading-snug text-sun-400">
-							Show this at the registration desk and before meals — a volunteer
+							Show this at the registration desk and before meals - a volunteer
 							will scan it. Your NFC tag works the same way.
 						</p>
 					</div>

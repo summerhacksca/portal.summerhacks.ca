@@ -6,10 +6,10 @@
 --   * pg_cron ticks every 5 minutes and does nothing but call
 --     private.notify_upcoming_events(), which fires one net.http_post at the
 --     Next.js route below. All the real logic (which events are due, embed
---     formatting, marking rows sent) lives in app/api/events/notify/route.ts —
+--     formatting, marking rows sent) lives in app/api/events/notify/route.ts -
 --     Postgres stays a scheduler, not an application.
 --   * The shared secret and target URL live in private.notify_config, a
---     locked-down single-row table — same shape as private.nfc_config from
+--     locked-down single-row table - same shape as private.nfc_config from
 --     0004_event_checkin.sql. Rotating the secret or repointing the URL at
 --     production is a one-line UPDATE, no redeploy of this migration needed.
 --
@@ -19,7 +19,7 @@
 -- schedule_events.discord_notified
 --
 -- 0002_portal_tables.sql grants `authenticated` SELECT-only on
--- schedule_events, so hackers can read this flag but never write it — only
+-- schedule_events, so hackers can read this flag but never write it - only
 -- the service-role route (via private.notify_config's secret) can flip it.
 -- =========================================================
 
@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_schedule_events_discord_pending
 	WHERE NOT discord_notified;
 
 -- =========================================================
--- private.notify_config — the cron job's credentials
+-- private.notify_config - the cron job's credentials
 --
 -- Single-row table: the CHECK pins the key to `true` so a second row can
 -- never be inserted. Mirrors private.nfc_config.
@@ -58,7 +58,7 @@ REVOKE ALL ON private.notify_config FROM anon, authenticated;
 -- hex, not base64: no +/= characters to mangle when pasted into a .env file.
 --
 -- Seeded with the current ngrok tunnel so this works end-to-end today.
--- Repoint at production on deploy — see the trailing comment block.
+-- Repoint at production on deploy - see the trailing comment block.
 INSERT INTO private.notify_config (api_base_url, cron_secret)
 VALUES (
 	'https://pansophical-unmeaningfully-daysi.ngrok-free.dev',
@@ -76,7 +76,7 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 GRANT USAGE ON SCHEMA cron TO postgres;
 
 -- =========================================================
--- private.notify_upcoming_events() — the dispatcher
+-- private.notify_upcoming_events() - the dispatcher
 --
 -- SECURITY DEFINER + SET search_path = '' so every reference is fully
 -- qualified (mirrors public.generate_nfc_id in 0004_event_checkin.sql).
@@ -96,12 +96,12 @@ DECLARE
 BEGIN
 	SELECT * INTO cfg FROM private.notify_config;
 	IF NOT FOUND THEN
-		RAISE EXCEPTION 'private.notify_config is empty — cannot dispatch notifications';
+		RAISE EXCEPTION 'private.notify_config is empty - cannot dispatch notifications';
 	END IF;
 
 	-- Cheap pre-flight so we don't wake the Next.js route every 5 minutes for
 	-- nothing. Mirrors the window app/api/events/notify/route.ts re-derives
-	-- for itself — this is only a guard, not the source of truth.
+	-- for itself - this is only a guard, not the source of truth.
 	IF NOT EXISTS (
 		SELECT 1 FROM public.schedule_events
 		WHERE NOT discord_notified
@@ -148,7 +148,7 @@ SELECT cron.schedule(
 -- Read the generated secret once to copy into CRON_SECRET (must byte-match):
 --   SELECT cron_secret FROM private.notify_config;
 --
--- Debugging a silent failure — net.http_post is async, responses land here
+-- Debugging a silent failure - net.http_post is async, responses land here
 -- (retained ~6h):
 --   SELECT status_code, content, created FROM net._http_response ORDER BY created DESC LIMIT 5;
 --   SELECT status, return_message, start_time FROM cron.job_run_details

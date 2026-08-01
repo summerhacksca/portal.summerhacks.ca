@@ -12,7 +12,7 @@ export default function PortalUnauthorizedPage() {
           </h1>
           <p className="font-body text-[14px] leading-snug text-sun-400">
             Your account doesn&apos;t have portal access yet. If you were accepted as a hacker,
-            contact the organizers — your role may still need to be updated.
+            contact the organizers - your role may still need to be updated.
           </p>
         </div>
         <Link

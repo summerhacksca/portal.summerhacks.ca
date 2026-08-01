@@ -23,7 +23,7 @@ export async function getCurrentUser() {
 /**
  * Fetches the signed-in hacker's profile row. The row is provisioned by the
  * database the moment their role grants portal access (see
- * migrations/0006_profile_provisioning.sql), so this is a pure read — a null
+ * migrations/0006_profile_provisioning.sql), so this is a pure read - a null
  * here means something is wrong with provisioning, not that it's a first visit.
  * RLS scopes the read to `auth.uid() = user_id`.
  */
@@ -118,7 +118,7 @@ export async function getMapZones(): Promise<MapZone[]> {
   return data as MapZone[];
 }
 
-/** Events a hacker can be checked into — meals and registration only. */
+/** Events a hacker can be checked into - meals and registration only. */
 export async function getCheckinEvents(): Promise<ScheduleEvent[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -162,7 +162,7 @@ export async function getMyCheckins(): Promise<EventCheckin[]> {
 
 /**
  * Whether the hacker has been checked in at the registration desk. This is what
- * "Checked in" means on the hacker-facing pages — a meal scan doesn't count.
+ * "Checked in" means on the hacker-facing pages - a meal scan doesn't count.
  */
 export function isCheckedInAtRegistration(
   checkins: EventCheckin[],

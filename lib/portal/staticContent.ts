@@ -10,21 +10,21 @@ export const FAQ_ITEMS: FaqItem[] = [
 		id: "check-in",
 		question: "How do I check in?",
 		answer:
-			"Tap “Show my QR” on your profile and hold the code up at the registration desk near Main Stage — a volunteer scans you in. If you picked up an NFC tag, tapping it does the same thing. You'll also be scanned before each meal.",
+			"Tap “Show my QR” on your profile and hold the code up at the registration desk near Main Stage - a volunteer scans you in. If you picked up an NFC tag, tapping it does the same thing. You'll also be scanned before each meal.",
 		sort_order: 1,
 	},
 	{
 		id: "submit-project",
 		question: "Where do I submit my project?",
 		answer:
-			"All submissions go through Agorize — use the Submit link in the header. Submissions lock at 2:00 PM Sunday.",
+			"All submissions go through Agorize - use the Submit link in the header. Submissions lock at 2:00 PM Sunday.",
 		sort_order: 2,
 	},
 	{
 		id: "incomplete-team",
 		question: "What if my team is incomplete?",
 		answer:
-			"Post in #team-formation on Discord any time before Sunday morning — plenty of solo hackers are looking too.",
+			"Post in #team-formation on Discord any time before Sunday morning - plenty of solo hackers are looking too.",
 		sort_order: 3,
 	},
 	{
@@ -45,7 +45,7 @@ export const FAQ_ITEMS: FaqItem[] = [
 		id: "quiet-space",
 		question: "Is there a quiet space?",
 		answer:
-			"Yes — the Quiet Room in Container Row C is a low-stimulation space, open all day.",
+			"Yes - the Quiet Room in Container Row C is a low-stimulation space, open all day.",
 		sort_order: 6,
 	},
 	{
@@ -69,7 +69,7 @@ export const HELP_CONTACTS: HelpContact[] = [
 		id: "sponsors",
 		topic: "Sponsor challenges & prizes",
 		contact: "Sponsor booth reps",
-		location: "Market Hall, 11:30 AM–5:30 PM",
+		location: "Market Hall, 11:30 AM-5:30 PM",
 		sort_order: 2,
 	},
 	{

@@ -6,7 +6,7 @@
 -- public.application_submissions / public.rsvp_submissions.
 
 -- =========================================================
--- Option A — delete all rows in these content tables, no matter
+-- Option A - delete all rows in these content tables, no matter
 -- what's in them. Simplest option, but also wipes any real content
 -- you've since added by hand alongside the seed rows. These 5 tables
 -- are organizer-managed only (no hacker-facing write policy), so this
@@ -15,7 +15,7 @@
 -- TRUNCATE public.tracks, public.sponsors, public.schedule_events, public.announcements, public.map_zones;
 
 -- =========================================================
--- Option B — delete only the known seed rows, matched by their
+-- Option B - delete only the known seed rows, matched by their
 -- distinguishing column(s). Safer if you've added real content
 -- alongside the seed data and want to keep it.
 -- =========================================================
@@ -62,14 +62,14 @@ DELETE FROM public.schedule_events WHERE (starts_at, title) IN (
 	('2026-08-09T11:30:00-04:00', 'Sponsor booths open'),
 	('2026-08-09T12:30:00-04:00', 'Lunch'),
 	('2026-08-09T14:00:00-04:00', 'Submission lock (Agorize)'),
-	('2026-08-09T14:30:00-04:00', 'Judging window — round 1'),
-	('2026-08-09T16:30:00-04:00', 'Judging window — finalists'),
+	('2026-08-09T14:30:00-04:00', 'Judging window - round 1'),
+	('2026-08-09T16:30:00-04:00', 'Judging window - finalists'),
 	('2026-08-09T18:00:00-04:00', 'Closing ceremony + awards'),
 	('2026-08-09T19:00:00-04:00', 'Dinner + send-off')
 );
 
 DELETE FROM public.announcements WHERE body IN (
-	'Breakfast is live in The Yard until 9:30 — grab something before workshops start.',
+	'Breakfast is live in The Yard until 9:30 - grab something before workshops start.',
 	'Sponsor booths in Market Hall open at 11:30. Bring questions for Fenwick Robotics and Cobalt Systems.',
 	'Wifi network is "SummerHacks-Guest", password is on your lanyard.',
 	'Reminder: submissions lock at 2:00 PM sharp on Agorize. No late submissions.'

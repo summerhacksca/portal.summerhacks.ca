@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-/** Rounded badge/chip — track labels, prize tags, type tags. */
+/** Rounded badge/chip - track labels, prize tags, type tags. */
 export function Pill({
 	children,
 	className = "",

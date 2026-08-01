@@ -32,7 +32,7 @@
   --text-brand-accent: var(--sun-400);
   --link-color: var(--sun-400);
   --link-hover-color: var(--orange);
-  /* tracking — the brand runs consistently tight/negative */
+  /* tracking - the brand runs consistently tight/negative */
   --tracking-tight: -0.02em;
   --tracking-tighter: -0.04em;
   --tracking-tightest: -0.06em;

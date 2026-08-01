@@ -2,20 +2,20 @@
 -- Run AFTER 0002_portal_tables.sql and 0003_user_roles.sql.
 --
 -- Adds the event check-in system:
---   * profiles.nfc_id — opaque per-hacker ID, derived in-database via HMAC.
+--   * profiles.nfc_id - opaque per-hacker ID, derived in-database via HMAC.
 --     Both the hacker's QR code and their NFC tag encode the same URL,
 --     https://<origin>/admin/checkin/<nfc_id>, which only volunteers and
 --     organizers can open (enforced by proxy.ts + can_access_admin()).
---   * schedule_events.check_in_required — check-in only applies to meals and
+--   * schedule_events.check_in_required - check-in only applies to meals and
 --     registration. Enforced by a trigger, not just by the UI.
---   * event_checkins — junction table, one row per (event, hacker).
+--   * event_checkins - junction table, one row per (event, hacker).
 --
 -- The HMAC secret is generated in-database and stored in private.nfc_config,
 -- so there is no new environment variable to keep in sync across local,
 -- preview, and production.
 
 -- =========================================================
--- Secret store — private schema, unreachable from the Data API
+-- Secret store - private schema, unreachable from the Data API
 -- =========================================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
@@ -181,7 +181,7 @@ SET check_in_required = true
 WHERE type IN ('Meal', 'Registration');
 
 -- =========================================================
--- public.event_checkins — junction table, one row per (event, hacker)
+-- public.event_checkins - junction table, one row per (event, hacker)
 --
 -- Undo flips `checked_in` rather than deleting the row, so the audit trail
 -- (who scanned, when) survives.

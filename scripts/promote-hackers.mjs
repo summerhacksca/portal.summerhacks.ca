@@ -27,7 +27,7 @@
  * Re-running is safe and idempotent: the RPC upserts, so an account already at
  * the target role is re-stamped and its profile re-provisioned if missing.
  *
- * Requires SUPABASE_SECRET_KEY, so run it locally — never ship it to a client.
+ * Requires SUPABASE_SECRET_KEY, so run it locally - never ship it to a client.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -36,7 +36,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { createClient } from "@supabase/supabase-js";
 
-/** Ordered least to most privileged — the index doubles as the demotion check. */
+/** Ordered least to most privileged - the index doubles as the demotion check. */
 const ROLES = ["user", "hacker", "volunteer", "organizer"];
 const PAGE_SIZE = 1000;
 const CONCURRENCY = 8;
@@ -84,7 +84,7 @@ function readEmailsFrom(filePath) {
   try {
     parsed = JSON.parse(text);
   } catch (error) {
-    throw new Error(`${label}: invalid JSON — ${error.message}`);
+    throw new Error(`${label}: invalid JSON - ${error.message}`);
   }
 
   if (!Array.isArray(parsed)) {
@@ -300,7 +300,7 @@ async function main() {
 
       if (missing.length > 0) {
         console.warn(
-          `\n${missing.length} account(s) have no profile or nfc_id — has ` +
+          `\n${missing.length} account(s) have no profile or nfc_id - has ` +
             `migrations/0006_profile_provisioning.sql been run?`,
         );
         for (const outcome of missing) console.warn(`  ${outcome.email}`);
@@ -311,11 +311,11 @@ async function main() {
   if (failed.length > 0) {
     console.error(`\nFailed (${failed.length}):`);
     for (const outcome of failed) {
-      console.error(`  ${outcome.email}  — ${outcome.reason}`);
+      console.error(`  ${outcome.email}  - ${outcome.reason}`);
     }
 
     if (values["failed-out"]) {
-      // A bare filename lands in scripts/data/, which is gitignored — this file
+      // A bare filename lands in scripts/data/, which is gitignored - this file
       // holds real applicant addresses and must not drift into the repo.
       const target = values["failed-out"].includes("/")
         ? values["failed-out"]

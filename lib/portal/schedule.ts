@@ -2,8 +2,8 @@ import type { ScheduleEvent } from "./types";
 
 /**
  * Picks the next `count` upcoming events (falls back to the last `count` if
- * the event has already ended). Kept in a plain helper — not inlined into a
- * component body — because it reads the current time (react-hooks/purity).
+ * the event has already ended). Kept in a plain helper - not inlined into a
+ * component body - because it reads the current time (react-hooks/purity).
  */
 export function pickUpNext(events: ScheduleEvent[], count = 2): ScheduleEvent[] {
 	const now = Date.now();

@@ -9,7 +9,7 @@
 -- config changes are required beyond running this SQL.
 
 -- =========================================================
--- public.profiles — one row per hacker, keyed to auth.users
+-- public.profiles - one row per hacker, keyed to auth.users
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.profiles (
 	user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -44,7 +44,7 @@ GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 
 -- =========================================================
--- public.tracks — canonical track list (profile selector, sponsor badges)
+-- public.tracks - canonical track list (profile selector, sponsor badges)
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.tracks (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,7 +65,7 @@ GRANT SELECT ON public.tracks TO authenticated;
 GRANT ALL ON public.tracks TO service_role;
 
 -- =========================================================
--- public.sponsors — Sponsor Board cards
+-- public.sponsors - Sponsor Board cards
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.sponsors (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,7 +88,7 @@ GRANT SELECT ON public.sponsors TO authenticated;
 GRANT ALL ON public.sponsors TO service_role;
 
 -- =========================================================
--- public.schedule_events — Master Schedule
+-- public.schedule_events - Master Schedule
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.schedule_events (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -112,7 +112,7 @@ GRANT SELECT ON public.schedule_events TO authenticated;
 GRANT ALL ON public.schedule_events TO service_role;
 
 -- =========================================================
--- public.announcements — Home "Live announcements"
+-- public.announcements - Home "Live announcements"
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.announcements (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -132,7 +132,7 @@ GRANT SELECT ON public.announcements TO authenticated;
 GRANT ALL ON public.announcements TO service_role;
 
 -- =========================================================
--- public.map_zones — Venue Map legend
+-- public.map_zones - Venue Map legend
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.map_zones (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -156,7 +156,7 @@ GRANT ALL ON public.map_zones TO service_role;
 -- Seed data (ported from the Hacker Portal design mockup)
 -- FAQ and "Who do I ask?" directory are hardcoded in the app
 -- (see lib/portal/staticContent.ts) rather than stored here.
--- Event weekend: Sat Aug 8 (online) – Sun Aug 9 (in-person), Toronto (EDT, UTC-4)
+-- Event weekend: Sat Aug 8 (online) - Sun Aug 9 (in-person), Toronto (EDT, UTC-4)
 -- =========================================================
 
 INSERT INTO public.tracks (name, slug, accent_color, sort_order) VALUES
@@ -201,13 +201,13 @@ INSERT INTO public.schedule_events (starts_at, title, type, location, sort_order
 	('2026-08-09T11:30:00-04:00', 'Sponsor booths open', 'Expo', 'Market Hall', 11),
 	('2026-08-09T12:30:00-04:00', 'Lunch', 'Meal', 'The Yard', 12),
 	('2026-08-09T14:00:00-04:00', 'Submission lock (Agorize)', 'Milestone', 'All tracks', 13),
-	('2026-08-09T14:30:00-04:00', 'Judging window — round 1', 'Judging', 'Container Row A / B', 14),
-	('2026-08-09T16:30:00-04:00', 'Judging window — finalists', 'Judging', 'Main Stage', 15),
+	('2026-08-09T14:30:00-04:00', 'Judging window - round 1', 'Judging', 'Container Row A / B', 14),
+	('2026-08-09T16:30:00-04:00', 'Judging window - finalists', 'Judging', 'Main Stage', 15),
 	('2026-08-09T18:00:00-04:00', 'Closing ceremony + awards', 'Ceremony', 'Main Stage', 16),
 	('2026-08-09T19:00:00-04:00', 'Dinner + send-off', 'Meal', 'The Yard', 17);
 
 INSERT INTO public.announcements (channel, body, accent, created_at) VALUES
-	('announcements', 'Breakfast is live in The Yard until 9:30 — grab something before workshops start.', 'var(--orange)', now() - interval '18 minutes'),
+	('announcements', 'Breakfast is live in The Yard until 9:30 - grab something before workshops start.', 'var(--orange)', now() - interval '18 minutes'),
 	('announcements', 'Sponsor booths in Market Hall open at 11:30. Bring questions for Fenwick Robotics and Cobalt Systems.', 'rgba(42,42,42,0.1)', now() - interval '50 minutes'),
 	('logistics', 'Wifi network is "SummerHacks-Guest", password is on your lanyard.', 'rgba(42,42,42,0.1)', now() - interval '85 minutes'),
 	('announcements', 'Reminder: submissions lock at 2:00 PM sharp on Agorize. No late submissions.', 'rgba(42,42,42,0.1)', now() - interval '120 minutes');
@@ -218,6 +218,6 @@ INSERT INTO public.map_zones (name, description, color, sort_order) VALUES
 	('Container Row A', 'Workshops, judging round 1', 'var(--sun-300)', 3),
 	('Container Row B', 'Workshops, judging round 1', 'var(--sun-300)', 4),
 	('Market Hall', 'Sponsor booths', 'var(--blue)', 5),
-	('Quiet Room', 'Container Row C — low-stimulation rest space', 'var(--purple)', 6),
+	('Quiet Room', 'Container Row C - low-stimulation rest space', 'var(--purple)', 6),
 	('Registration / check-in', 'QR check-in desk, volunteer help', 'var(--terracotta)', 7),
 	('Washrooms', 'Near Container Row A and The Yard', 'var(--sun-400)', 8);

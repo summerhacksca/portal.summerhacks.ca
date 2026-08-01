@@ -35,7 +35,7 @@ async function verifySession(request: NextRequest) {
   return user;
 }
 
-/** GET /api/rsvp — fetch the authenticated user's existing RSVP (if any) */
+/** GET /api/rsvp - fetch the authenticated user's existing RSVP (if any) */
 export async function GET(request: NextRequest) {
   const user = await verifySession(request);
   if (!user) {
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ rsvp: data ?? null }, { status: 200 });
 }
 
-/** POST /api/rsvp — create or update the authenticated user's RSVP */
+/** POST /api/rsvp - create or update the authenticated user's RSVP */
 export async function POST(request: NextRequest) {
   try {
     const user = await verifySession(request);

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use @supabase/ssr client — PKCE flow stores the verifier in a cookie
+    // Use @supabase/ssr client - PKCE flow stores the verifier in a cookie
     // so the auth/confirm route can exchange the code for a session later.
     const supabase = await createSsrClient();
     const emailRedirectTo = `${getSiteUrl()}/auth/confirm`;

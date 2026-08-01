@@ -26,7 +26,7 @@ export default async function AdminHomePage() {
 				</h2>
 				<p className="max-w-[620px] font-body text-[14px] leading-relaxed text-base-800">
 					Scan a hacker&apos;s QR code with your phone camera, or tap their NFC
-					tag. Both open their check-in page directly — you don&apos;t need to
+					tag. Both open their check-in page directly - you don&apos;t need to
 					come back here first. Pick the event, hit Check in, done.
 				</p>
 				<Link

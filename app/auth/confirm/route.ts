@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Fallback: implicit flow (token_hash parameter) — works without PKCE verifier
+  // Fallback: implicit flow (token_hash parameter) - works without PKCE verifier
   if (!session && tokenHash && type) {
     console.log("[auth/confirm] trying verifyOtp (implicit)");
     const { data, error } = await supabase.auth.verifyOtp({

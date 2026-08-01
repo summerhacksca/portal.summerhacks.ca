@@ -33,7 +33,7 @@ export default async function NfcTagsPage() {
 			/>
 			<p className="max-w-[620px] font-body text-[14px] leading-relaxed text-base-800">
 				Each hacker has one permanent check-in URL. Copy it here and write it to
-				their tag with an NFC writer app — the QR beside it encodes the same URL,
+				their tag with an NFC writer app - the QR beside it encodes the same URL,
 				so a phone camera and a tag tap land on the same page.
 			</p>
 			<NfcTagList tags={tags} />

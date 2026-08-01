@@ -4,10 +4,10 @@
 --
 -- Roles (stored in auth.users.raw_app_meta_data.role, serialized into the JWT
 -- under `app_metadata.role`):
---   user       — default; cannot access /portal or /admin
---   hacker     — can access /portal
---   volunteer  — can access /portal and /admin
---   organizer  — can access /portal and /admin
+--   user       - default; cannot access /portal or /admin
+--   hacker     - can access /portal
+--   volunteer  - can access /portal and /admin
+--   organizer  - can access /portal and /admin
 --
 -- We use app_metadata (not user_metadata) so end users cannot elevate their own
 -- role. Promote users with public.set_user_role() using the service role.
@@ -131,7 +131,7 @@ REVOKE ALL ON FUNCTION public.set_user_role(uuid, public.user_role) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.set_user_role(uuid, public.user_role) TO service_role;
 
 -- =========================================================
--- Portal RLS — require hacker / volunteer / organizer
+-- Portal RLS - require hacker / volunteer / organizer
 -- (run after 0002_portal_tables.sql)
 -- =========================================================
 
@@ -189,7 +189,7 @@ CREATE POLICY "Portal users can read map zones" ON public.map_zones
 	USING (public.can_access_portal());
 
 -- =========================================================
--- Future /admin tables — use this pattern when you add them:
+-- Future /admin tables - use this pattern when you add them:
 --
 --   CREATE POLICY "Staff can read …" ON public.<table>
 --     FOR SELECT TO authenticated

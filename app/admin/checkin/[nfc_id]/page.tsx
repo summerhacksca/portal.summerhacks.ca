@@ -4,7 +4,7 @@ import { SectionHeader } from "@/components/portal/ui/SectionHeader";
 import { getCheckinEvents, getCheckinsForUser, getProfileByNfcId } from "@/lib/portal/queries";
 import { checkInUrlFor } from "@/lib/portal/siteUrl";
 
-/** The event nearest to now — what a volunteer almost always wants preselected. */
+/** The event nearest to now - what a volunteer almost always wants preselected. */
 function nearestEventId(events: { id: string; starts_at: string }[]): string {
   if (events.length === 0) return "";
 
@@ -36,7 +36,7 @@ export default async function AdminCheckinPage({
           <p className="font-body text-[14px] leading-relaxed text-sun-400">
             Nothing in the portal matches{" "}
             <span className="font-mono text-[13px] text-base-800">{nfcId}</span>. The tag may
-            have been written with an old or mistyped URL — check it against the provisioning
+            have been written with an old or mistyped URL - check it against the provisioning
             page.
           </p>
           <Link
@@ -50,7 +50,7 @@ export default async function AdminCheckinPage({
     );
   }
 
-  // Server component, so the hacker's details are here on first paint — no
+  // Server component, so the hacker's details are here on first paint - no
   // client-side polling needed before a volunteer can act.
   const checkins = await getCheckinsForUser(profile.user_id);
 

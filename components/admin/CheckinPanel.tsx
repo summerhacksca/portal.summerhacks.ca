@@ -214,7 +214,7 @@ export function CheckinPanel({
 				)}
 			</div>
 
-			{/* Tag provisioning — the URL to write to this hacker's NFC tag */}
+			{/* Tag provisioning - the URL to write to this hacker's NFC tag */}
 			<div className="flex flex-col gap-2.5 rounded-sm bg-surface-card p-6 shadow-card">
 				<span className="font-display text-[12px] font-semibold tracking-tight text-sun-400">
 					NFC tag URL

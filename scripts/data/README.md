@@ -1,7 +1,7 @@
 # scripts/data/
 
 Email lists consumed by `scripts/`. **Everything here except this file and
-`*.example.json` is gitignored** — these are real applicant addresses.
+`*.example.json` is gitignored** - these are real applicant addresses.
 
 Each file is a JSON array of addresses:
 

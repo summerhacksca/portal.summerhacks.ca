@@ -5,7 +5,7 @@
 --
 -- Until now a profile row was created lazily by the app on the hacker's first
 -- /portal visit, so an accepted hacker who had signed in but never opened the
--- portal had no profile — and therefore no nfc_id, no QR code, and no row on
+-- portal had no profile - and therefore no nfc_id, no QR code, and no row on
 -- /admin/nfc-tags for an organizer to write a tag from.
 --
 -- After this migration the row is created the moment an account's role becomes
@@ -19,11 +19,11 @@
 --
 -- OPERATIONAL NOTE: promote users only with public.set_user_role(). Editing
 -- auth.users.raw_app_meta_data.role by hand in the Dashboard bypasses
--- public.user_roles, which grants portal access without provisioning a profile —
+-- public.user_roles, which grants portal access without provisioning a profile -
 -- exactly the bug this migration closes.
 
 -- =========================================================
--- Housekeeping — converge the nfc_id trigger on one name
+-- Housekeeping - converge the nfc_id trigger on one name
 --
 -- An earlier draft of 0004 named this trigger profiles_before_write; the
 -- committed 0004 names it profiles_set_nfc_id. Depending on which drafts a
@@ -64,7 +64,7 @@ CREATE TRIGGER profiles_set_nfc_id
 	EXECUTE FUNCTION public.profiles_set_nfc_id();
 
 -- =========================================================
--- public.ensure_profile — create a portal user's profile if it is missing
+-- public.ensure_profile - create a portal user's profile if it is missing
 --
 -- SECURITY DEFINER so it can read auth.users and so the insert runs as the
 -- table owner, bypassing RLS (the same mechanism auth_users_create_role()
@@ -98,7 +98,7 @@ $$;
 REVOKE ALL ON FUNCTION public.ensure_profile(uuid) FROM PUBLIC, anon, authenticated;
 
 -- =========================================================
--- Provision on promotion — AFTER INSERT OR UPDATE OF role ON user_roles
+-- Provision on promotion - AFTER INSERT OR UPDATE OF role ON user_roles
 --
 -- Kept separate from user_roles_sync_to_auth (0005): that trigger's job is
 -- keeping the JWT claim in sync, this one's is provisioning.
@@ -131,7 +131,7 @@ CREATE TRIGGER user_roles_create_profile
 	EXECUTE FUNCTION public.user_roles_create_profile();
 
 -- =========================================================
--- Backfill — every account that already has portal access
+-- Backfill - every account that already has portal access
 --
 -- This is the statement that makes /admin/nfc-tags complete: hackers who were
 -- promoted before this migration but never opened the portal get a profile, and
@@ -157,7 +157,7 @@ ON CONFLICT (user_id) DO NOTHING;
 --
 -- 0002_portal_tables.sql granted table-wide INSERT and UPDATE on profiles to
 -- authenticated, and the RLS policies only check auth.uid() = user_id. That let
--- a hacker PATCH their own email — the address a volunteer reads off the
+-- a hacker PATCH their own email - the address a volunteer reads off the
 -- check-in page to confirm they are scanning the right person.
 --
 -- Nothing needs INSERT any more, and column-level grants pin email, nfc_id,
@@ -179,7 +179,7 @@ GRANT UPDATE (full_name, team_name, school, tracks, updated_at)
 -- =========================================================
 -- Keep profiles.email fresh
 --
--- The app can no longer write email, so the database has to maintain it —
+-- The app can no longer write email, so the database has to maintain it -
 -- otherwise a Supabase email-change flow would leave profiles.email stale with
 -- no way to correct it.
 -- =========================================================

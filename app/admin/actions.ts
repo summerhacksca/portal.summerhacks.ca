@@ -11,7 +11,7 @@ export type CheckinResult = {
 
 /**
  * proxy.ts already blocks non-staff from /admin, but the actions are their own
- * entry point — re-check the role here, and write through the user-scoped
+ * entry point - re-check the role here, and write through the user-scoped
  * client so the `can_access_admin()` RLS policy is the real enforcement.
  */
 async function requireStaff() {

@@ -15,7 +15,7 @@ DROP FUNCTION IF EXISTS public.profiles_sync_role_to_auth();
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS role;
 
 -- =========================================================
--- public.user_roles — one row per auth account
+-- public.user_roles - one row per auth account
 -- =========================================================
 
 CREATE TABLE IF NOT EXISTS public.user_roles (
@@ -39,7 +39,7 @@ GRANT SELECT ON public.user_roles TO authenticated;
 GRANT ALL ON public.user_roles TO service_role;
 
 -- =========================================================
--- BEFORE write — authenticated users cannot self-elevate
+-- BEFORE write - authenticated users cannot self-elevate
 -- =========================================================
 
 CREATE OR REPLACE FUNCTION public.user_roles_before_write()
@@ -69,7 +69,7 @@ CREATE TRIGGER user_roles_before_write
 	EXECUTE FUNCTION public.user_roles_before_write();
 
 -- =========================================================
--- AFTER write — sync user_roles.role → auth.users.raw_app_meta_data
+-- AFTER write - sync user_roles.role → auth.users.raw_app_meta_data
 -- =========================================================
 
 CREATE OR REPLACE FUNCTION public.user_roles_sync_to_auth()
@@ -96,7 +96,7 @@ CREATE TRIGGER user_roles_sync_to_auth
 	EXECUTE FUNCTION public.user_roles_sync_to_auth();
 
 -- =========================================================
--- New sign-ups — create a user_roles row (replaces set_default_user_role)
+-- New sign-ups - create a user_roles row (replaces set_default_user_role)
 -- =========================================================
 
 CREATE OR REPLACE FUNCTION public.auth_users_create_role()
@@ -125,7 +125,7 @@ CREATE TRIGGER auth_users_create_role
 	EXECUTE FUNCTION public.auth_users_create_role();
 
 -- =========================================================
--- Backfill — every existing auth.users account gets a row
+-- Backfill - every existing auth.users account gets a row
 -- =========================================================
 
 INSERT INTO public.user_roles (user_id, role)
@@ -149,7 +149,7 @@ FROM public.user_roles AS ur
 WHERE ur.user_id = u.id;
 
 -- =========================================================
--- profiles_before_write — nfc_id only (from 0004_event_checkin.sql)
+-- profiles_before_write - nfc_id only (from 0004_event_checkin.sql)
 -- =========================================================
 
 CREATE OR REPLACE FUNCTION public.profiles_before_write()
@@ -173,7 +173,7 @@ END;
 $$;
 
 -- =========================================================
--- set_user_role — write through user_roles
+-- set_user_role - write through user_roles
 -- =========================================================
 
 CREATE OR REPLACE FUNCTION public.set_user_role(

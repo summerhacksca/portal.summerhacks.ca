@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Refreshes the Supabase auth session and returns a `NextResponse` with any
- * updated auth cookies. Must run in proxy.ts — Server Components cannot write
+ * updated auth cookies. Must run in proxy.ts - Server Components cannot write
  * cookies when `getUser()` triggers a token refresh.
  */
 export async function updateSupabaseSession(request: NextRequest) {

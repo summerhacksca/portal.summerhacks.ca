@@ -12,7 +12,7 @@ type SupabaseCookie = {
  * Used in route handlers and server components where `cookies()` is available.
  *
  * Optionally collects cookies into an external array instead of writing them
- * to the response immediately — useful when returning a custom NextResponse
+ * to the response immediately - useful when returning a custom NextResponse
  * (e.g. redirect) and you need to apply the cookies to that response manually.
  */
 export async function createClient(collectInto?: SupabaseCookie[]) {
@@ -38,7 +38,7 @@ export async function createClient(collectInto?: SupabaseCookie[]) {
             );
           } catch {
             // Called from a Server Component (e.g. layout). Cookie writes are
-            // only allowed in Server Actions and Route Handlers — proxy.ts
+            // only allowed in Server Actions and Route Handlers - proxy.ts
             // refreshes the session before the page renders.
           }
         },

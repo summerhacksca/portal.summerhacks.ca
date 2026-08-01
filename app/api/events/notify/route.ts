@@ -79,7 +79,7 @@ async function sendToDiscord(webhookUrl: string, event: DueEvent) {
 }
 
 /**
- * POST /api/events/notify — called every 5 minutes by the
+ * POST /api/events/notify - called every 5 minutes by the
  * private.notify_upcoming_events() pg_cron job (see
  * migrations/0007_event_discord_notifications.sql). Not user-facing:
  * authorization is a shared bearer secret, not a portal session, and this
