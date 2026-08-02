@@ -7,13 +7,22 @@
 --   user       - default; cannot access /portal or /admin
 --   hacker     - can access /portal
 --   volunteer  - can access /portal and /admin
---   organizer  - can access /portal and /admin
+--   organizer  - can access /portal and /admin; can manage volunteers and
+--                announcements (migrations/0012_staff_management.sql)
+--   superadmin - everything organizer can, plus managing organizers; set by
+--                hand in the database, never through the app
+--                (migrations/0011_superadmin_enum.sql)
 --
 -- We use app_metadata (not user_metadata) so end users cannot elevate their own
 -- role. Promote users with public.set_user_role() using the service role.
 --
 -- After running this migration, enforce route-level access in the Next.js proxy
 -- (proxy.ts) by reading `session.user.app_metadata.role` from the JWT.
+--
+-- NOTE: this file is retro-edited to include 'superadmin' so a fresh database
+-- is correct from here onward. A database that already ran an earlier version
+-- of this file needs migrations/0011_superadmin_enum.sql and
+-- migrations/0012_staff_management.sql to converge - see those files.
 
 -- =========================================================
 -- Role enum + JWT helpers
@@ -23,7 +32,8 @@ CREATE TYPE public.user_role AS ENUM (
 	'user',
 	'hacker',
 	'volunteer',
-	'organizer'
+	'organizer',
+	'superadmin'
 );
 
 -- Read the caller's role from the JWT (defaults to 'user' when missing).
@@ -45,7 +55,7 @@ LANGUAGE sql
 STABLE
 SET search_path = ''
 AS $$
-	SELECT public.jwt_role() IN ('hacker', 'volunteer', 'organizer');
+	SELECT public.jwt_role() IN ('hacker', 'volunteer', 'organizer', 'superadmin');
 $$;
 
 CREATE OR REPLACE FUNCTION public.can_access_admin()
@@ -54,12 +64,36 @@ LANGUAGE sql
 STABLE
 SET search_path = ''
 AS $$
-	SELECT public.jwt_role() IN ('volunteer', 'organizer');
+	SELECT public.jwt_role() IN ('volunteer', 'organizer', 'superadmin');
+$$;
+
+-- Organizer or superadmin: can manage volunteer/hacker roles and post
+-- announcements. See migrations/0012_staff_management.sql for the RPCs and
+-- policies that use this.
+CREATE OR REPLACE FUNCTION public.is_organizer()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = ''
+AS $$
+	SELECT public.jwt_role() IN ('organizer', 'superadmin');
+$$;
+
+-- Superadmin only: can additionally grant/revoke the organizer role.
+CREATE OR REPLACE FUNCTION public.is_superadmin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = ''
+AS $$
+	SELECT public.jwt_role() = 'superadmin';
 $$;
 
 GRANT EXECUTE ON FUNCTION public.jwt_role() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.can_access_portal() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.can_access_admin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_organizer() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_superadmin() TO authenticated;
 
 -- =========================================================
 -- Default role for new sign-ups (BEFORE INSERT on auth.users)

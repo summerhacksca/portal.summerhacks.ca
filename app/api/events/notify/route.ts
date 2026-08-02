@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { getDiscordWebhookUrl, postToDiscord } from "@/lib/discord/webhook";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { EVENT_TYPE_DISCORD_COLOR } from "@/lib/portal/eventTypes";
 import type { ScheduleEventType } from "@/lib/portal/types";
@@ -60,21 +61,14 @@ function buildEmbed(event: DueEvent) {
 }
 
 async function sendToDiscord(webhookUrl: string, event: DueEvent) {
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ embeds: [buildEmbed(event)] }),
-  });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    logError("Discord webhook request failed", new Error(`status ${response.status}`), {
+  try {
+    await postToDiscord(webhookUrl, { embeds: [buildEmbed(event)] });
+  } catch (error) {
+    logError("Discord webhook request failed", error, {
       eventId: event.id,
       eventTitle: event.title,
-      status: response.status,
-      body: body.slice(0, 500),
     });
-    throw new Error(`Discord webhook returned ${response.status}: ${body}`);
+    throw error;
   }
 }
 
@@ -100,7 +94,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  const webhookUrl = getDiscordWebhookUrl();
   if (!webhookUrl) {
     logError("Server misconfigured", new Error("DISCORD_WEBHOOK_URL is not set"));
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });

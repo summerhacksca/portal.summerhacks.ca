@@ -11,15 +11,7 @@ import {
   isCheckedInAtRegistration,
 } from "@/lib/portal/queries";
 import { pickUpNext } from "@/lib/portal/schedule";
-
-function relativeTime(iso: string) {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const minutes = Math.round(diffMs / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours}h ago`;
-}
+import { relativeTime } from "@/lib/portal/relativeTime";
 
 function formatEventTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", {

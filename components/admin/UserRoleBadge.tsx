@@ -4,6 +4,7 @@ const ROLE_BADGE_CLASS: Record<UserRole, string> = {
   hacker: "bg-orange text-white",
   volunteer: "bg-blue text-white",
   organizer: "bg-purple text-white",
+  superadmin: "bg-base-900 text-white",
   user: "bg-black/10 text-base-800",
 };
 
@@ -11,6 +12,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
   hacker: "Hacker",
   volunteer: "Volunteer",
   organizer: "Organizer",
+  superadmin: "Superadmin",
   user: "User",
 };
 

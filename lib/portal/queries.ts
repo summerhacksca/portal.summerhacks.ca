@@ -15,6 +15,7 @@ import type {
   ScavengerSettings,
   ScheduleEvent,
   ScoredSubmission,
+  StaffMember,
   Track,
   TrekReviewSubmission,
 } from "./types";
@@ -215,6 +216,23 @@ export async function getUserRolesMap(): Promise<Map<string, UserRole>> {
     if (isUserRole(row.role)) roles.set(row.user_id, row.role);
   }
   return roles;
+}
+
+/**
+ * Every account staff can see, profile merged with role, for /admin/staff.
+ * Built from the same two staff-only queries app/admin/nfc-tags/page.tsx
+ * already combines - a role of "user" has no profiles row by design
+ * (migrations/0006_profile_provisioning.sql) and is correctly absent here.
+ */
+export async function getStaffDirectory(): Promise<StaffMember[]> {
+  const [profiles, roles] = await Promise.all([getPortalProfiles(), getUserRolesMap()]);
+
+  return profiles.map((profile) => ({
+    user_id: profile.user_id,
+    email: profile.email,
+    full_name: profile.full_name,
+    role: roles.get(profile.user_id) ?? "hacker",
+  }));
 }
 
 // ---------------------------------------------------------------------------

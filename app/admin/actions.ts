@@ -1,7 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { canAccessAdmin, getRoleFromAppMetadata } from "@/lib/auth/roles";
+import { findAuthUserByEmail } from "@/lib/auth/findAuthUser";
+import {
+	canAccessAdmin,
+	canManageStaff,
+	getRoleFromAppMetadata,
+	isSuperadmin,
+	isUserRole,
+} from "@/lib/auth/roles";
+import type { UserRole } from "@/lib/auth/roles";
+import { getDiscordWebhookUrl, postToDiscord } from "@/lib/discord/webhook";
+import {
+	accentCssForKey,
+	discordColorForCss,
+	isAnnouncementAccentKey,
+} from "@/lib/portal/announcementAccents";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type CheckinResult = {
@@ -29,6 +44,29 @@ async function requireStaff() {
 	}
 
 	return { supabase, user };
+}
+
+/**
+ * Staff management and announcements are organizer/superadmin only. Same
+ * shape as requireStaff() - re-check here even though proxy.ts already blocks
+ * volunteers from /admin/staff and /admin/announcements.
+ */
+async function requireOrganizer() {
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	if (!user) {
+		throw new Error("Not authenticated");
+	}
+
+	const role = getRoleFromAppMetadata(user.app_metadata);
+	if (!canManageStaff(role)) {
+		throw new Error("Organizer access required");
+	}
+
+	return { supabase, user, role };
 }
 
 /** Check a hacker into an event by their scanned tag ID. */
@@ -168,4 +206,202 @@ export async function updateTrekSettings(formData: FormData): Promise<CheckinRes
 	revalidatePath("/portal", "layout");
 
 	return { success: true, message: "Settings saved." };
+}
+
+/**
+ * Change a staff member's or hacker's role. public.admin_set_user_role()
+ * (migrations/0012_staff_management.sql) is the real enforcement - it blocks
+ * self-elevation, touching superadmin, and an organizer touching another
+ * organizer, each with a distinct message that surfaces here via
+ * error.message. Written through the user-scoped client so the RPC sees the
+ * caller's own JWT role.
+ */
+export async function updateUserRole(
+	targetUserId: string,
+	newRole: UserRole,
+): Promise<CheckinResult> {
+	const { supabase } = await requireOrganizer();
+
+	const { error } = await supabase.rpc("admin_set_user_role", {
+		target_user_id: targetUserId,
+		new_role: newRole,
+	});
+
+	if (error) {
+		console.error("Failed to update user role:", error);
+		return { success: false, message: error.message };
+	}
+
+	revalidatePath("/admin", "layout");
+
+	return { success: true, message: "Role updated." };
+}
+
+/**
+ * Add a brand-new staff member by email. Unlike a hacker, staff never submit
+ * an application, so there is no auth.users row to promote until one is
+ * created here - the one place this file needs the service-role client.
+ */
+export async function inviteStaff(formData: FormData): Promise<CheckinResult> {
+	const { role: viewerRole } = await requireOrganizer();
+
+	const email = String(formData.get("email") ?? "")
+		.trim()
+		.toLowerCase();
+	const fullName = String(formData.get("full_name") ?? "").trim();
+	const newRole = String(formData.get("role") ?? "");
+
+	if (!email) {
+		return { success: false, message: "Email is required." };
+	}
+
+	if (!isUserRole(newRole) || (newRole !== "volunteer" && newRole !== "organizer")) {
+		return { success: false, message: "Role must be volunteer or organizer." };
+	}
+
+	if (newRole === "organizer" && !isSuperadmin(viewerRole)) {
+		return { success: false, message: "Only a superadmin can add an organizer." };
+	}
+
+	const admin = createAdminClient();
+
+	try {
+		let authUser = await findAuthUserByEmail(admin, email);
+
+		if (!authUser) {
+			const { data, error } = await admin.auth.admin.createUser({
+				email,
+				email_confirm: true,
+				user_metadata: fullName ? { full_name: fullName } : undefined,
+			});
+
+			if (error || !data.user) {
+				console.error("Failed to create auth user:", error);
+				return { success: false, message: error?.message ?? "Failed to create account." };
+			}
+
+			authUser = data.user;
+		}
+
+		// The service-role RPC, not admin_set_user_role - this bypasses the
+		// organizer-vs-organizer check we've already made above, and its write
+		// is what fires user_roles_create_profile (migrations/0006) to
+		// provision the profiles row isStaffEmail() needs before a magic link
+		// can be sent (lib/auth/magicLinkEligibility.ts).
+		const { error: roleError } = await admin.rpc("set_user_role", {
+			target_user_id: authUser.id,
+			new_role: newRole,
+		});
+
+		if (roleError) {
+			console.error("Failed to set invited user's role:", roleError);
+			return { success: false, message: roleError.message };
+		}
+	} catch (error) {
+		console.error("Failed to invite staff member:", error);
+		return {
+			success: false,
+			message: error instanceof Error ? error.message : "Failed to invite.",
+		};
+	}
+
+	revalidatePath("/admin", "layout");
+
+	return { success: true, message: `${email} can now sign in at /portal/login.` };
+}
+
+/**
+ * Post a new announcement. Insert goes through the user-scoped client so the
+ * "Organizers can manage announcements" RLS policy (migrations/0012) is the
+ * real enforcement. The row is saved before the Discord attempt, so a webhook
+ * failure never means a lost announcement - it comes back as a partial
+ * success instead of pretending nothing landed.
+ */
+export async function createAnnouncement(formData: FormData): Promise<CheckinResult> {
+	const { supabase, user } = await requireOrganizer();
+
+	const channel = String(formData.get("channel") ?? "").trim() || "announcements";
+	const body = String(formData.get("body") ?? "").trim();
+	const accentKey = String(formData.get("accent") ?? "");
+	const shouldPostToDiscord = formData.get("post_to_discord") === "on";
+
+	if (!body) {
+		return { success: false, message: "Announcement body is required." };
+	}
+
+	if (!isAnnouncementAccentKey(accentKey)) {
+		return { success: false, message: "Choose an accent." };
+	}
+
+	const accent = accentCssForKey(accentKey);
+
+	const { data, error } = await supabase
+		.from("announcements")
+		.insert({ channel, body, accent, created_by: user.id })
+		.select()
+		.single();
+
+	if (error) {
+		console.error("Failed to create announcement:", error);
+		return { success: false, message: error.message };
+	}
+
+	revalidatePath("/portal", "layout");
+	revalidatePath("/admin", "layout");
+
+	if (!shouldPostToDiscord) {
+		return { success: true, message: "Posted." };
+	}
+
+	const webhookUrl = getDiscordWebhookUrl();
+	if (!webhookUrl) {
+		return {
+			success: true,
+			message: "Posted to the portal, but DISCORD_WEBHOOK_URL is not set.",
+		};
+	}
+
+	try {
+		await postToDiscord(webhookUrl, {
+			embeds: [
+				{
+					title: `📣 #${channel}`,
+					description: body,
+					color: discordColorForCss(accent),
+					footer: { text: "SummerHacks" },
+					timestamp: data.created_at,
+				},
+			],
+		});
+	} catch (discordError) {
+		console.error("Failed to post announcement to Discord:", discordError);
+		return {
+			success: true,
+			message: `Posted to the portal, but the Discord ping failed: ${
+				discordError instanceof Error ? discordError.message : "unknown error"
+			}`,
+		};
+	}
+
+	return { success: true, message: "Posted to the portal and Discord." };
+}
+
+/**
+ * Delete an announcement. Discord messages are not retracted - the webhook
+ * response's message id is never stored, so there is nothing to delete there.
+ */
+export async function deleteAnnouncement(id: string): Promise<CheckinResult> {
+	const { supabase } = await requireOrganizer();
+
+	const { error } = await supabase.from("announcements").delete().eq("id", id);
+
+	if (error) {
+		console.error("Failed to delete announcement:", error);
+		return { success: false, message: error.message };
+	}
+
+	revalidatePath("/portal", "layout");
+	revalidatePath("/admin", "layout");
+
+	return { success: true, message: "Deleted." };
 }

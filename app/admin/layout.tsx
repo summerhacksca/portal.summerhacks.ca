@@ -2,6 +2,8 @@ import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { canManageStaff, getRoleFromAppMetadata } from "@/lib/auth/roles";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Staff · SummerHacks",
@@ -12,9 +14,18 @@ export const dynamic = "force-dynamic";
 
 /**
  * Staff-only shell. Access is enforced in proxy.ts (`canAccessAdmin`) and again
- * by the `can_access_admin()` RLS policies, so there is no auth check here.
+ * by the `can_access_admin()` RLS policies, so there is no auth check here -
+ * the one read below is just to decide whether to render the organizer-only
+ * nav links, not a gate. /admin/staff and /admin/announcements re-check and
+ * redirect on their own if a volunteer reaches them directly.
  */
-export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const canSeeOrganizerLinks = user ? canManageStaff(getRoleFromAppMetadata(user.app_metadata)) : false;
+
   return (
     <div className="flex min-h-screen flex-col bg-surface-page">
       <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-sun-50/90 px-6 py-3.5 backdrop-blur-sm sm:px-9">
@@ -49,6 +60,22 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
           >
             Trek
           </Link>
+          {canSeeOrganizerLinks && (
+            <>
+              <Link
+                href="/admin/staff"
+                className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
+              >
+                Staff
+              </Link>
+              <Link
+                href="/admin/announcements"
+                className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
+              >
+                Announcements
+              </Link>
+            </>
+          )}
           <Link
             href="/portal"
             className="inline-flex h-9.5 items-center rounded-pill bg-base-900 px-4 font-display text-[13px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80"

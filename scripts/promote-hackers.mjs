@@ -36,8 +36,15 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { createClient } from "@supabase/supabase-js";
 
-/** Ordered least to most privileged - the index doubles as the demotion check. */
-const ROLES = ["user", "hacker", "volunteer", "organizer"];
+/**
+ * Ordered least to most privileged - the index doubles as the demotion check.
+ * superadmin is included so an existing superadmin's indexOf isn't -1 (which
+ * would read as "lower than everything" and let this script silently demote
+ * one past the --allow-demote guard), but it is not a valid --role target -
+ * superadmin is set by hand in the database, never through a script.
+ */
+const ROLES = ["user", "hacker", "volunteer", "organizer", "superadmin"];
+const ASSIGNABLE_ROLES = ROLES.filter((role) => role !== "superadmin");
 const PAGE_SIZE = 1000;
 const CONCURRENCY = 8;
 
@@ -198,8 +205,8 @@ async function main() {
   });
 
   const role = values.role;
-  if (!ROLES.includes(role)) {
-    throw new Error(`--role must be one of ${ROLES.join(", ")} (got "${role}")`);
+  if (!ASSIGNABLE_ROLES.includes(role)) {
+    throw new Error(`--role must be one of ${ASSIGNABLE_ROLES.join(", ")} (got "${role}")`);
   }
 
   // Anchored to the repo root rather than the cwd so the script runs from

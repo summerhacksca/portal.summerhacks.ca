@@ -1,3 +1,5 @@
+import type { UserRole } from "@/lib/auth/roles";
+
 export type Profile = {
   user_id: string;
   email: string;
@@ -9,6 +11,14 @@ export type Profile = {
   nfc_id: string;
   created_at: string;
   updated_at: string;
+};
+
+/** One row on /admin/staff - a profile merged with its current role. */
+export type StaffMember = {
+  user_id: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
 };
 
 export type Track = {
@@ -64,6 +74,7 @@ export type Announcement = {
   body: string;
   accent: string;
   created_at: string;
+  created_by: string | null;
 };
 
 export type MapZone = {

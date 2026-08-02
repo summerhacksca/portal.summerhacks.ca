@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { canAccessAdmin, canAccessPortal, getRoleFromAccessToken } from "@/lib/auth/roles";
+import {
+  canAccessAdmin,
+  canAccessPortal,
+  canManageStaff,
+  getRoleFromAccessToken,
+} from "@/lib/auth/roles";
 import { parseShSession } from "@/lib/auth/session";
 import { mergeSupabaseResponse, updateSupabaseSession } from "@/lib/supabase/proxy";
 
@@ -73,6 +78,18 @@ export async function proxy(request: NextRequest) {
     if (!canAccessAdmin(role!)) {
       const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
       return redirect(new URL(destination, request.url));
+    }
+
+    // Staff management and announcements are organizer/superadmin only -
+    // volunteers can reach the rest of /admin.
+    const isOrganizerOnlyRoute =
+      pathname === "/admin/staff" ||
+      pathname.startsWith("/admin/staff/") ||
+      pathname === "/admin/announcements" ||
+      pathname.startsWith("/admin/announcements/");
+
+    if (isOrganizerOnlyRoute && !canManageStaff(role!)) {
+      return redirect(new URL("/admin", request.url));
     }
   }
 

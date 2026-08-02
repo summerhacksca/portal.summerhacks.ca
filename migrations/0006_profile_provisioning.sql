@@ -115,7 +115,7 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-	IF NEW.role IN ('hacker', 'volunteer', 'organizer') THEN
+	IF NEW.role IN ('hacker', 'volunteer', 'organizer', 'superadmin') THEN
 		PERFORM public.ensure_profile(NEW.user_id);
 	END IF;
 
