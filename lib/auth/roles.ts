@@ -14,14 +14,16 @@ export function getRoleFromAppMetadata(
 }
 
 export function canAccessPortal(role: UserRole): boolean {
-  return role === "hacker" || role === "volunteer" || role === "organizer" || role === "superadmin";
+  return (
+    role === "hacker" || role === "volunteer" || role === "organizer" || role === "superadmin"
+  );
 }
 
 export function canAccessAdmin(role: UserRole): boolean {
   return role === "volunteer" || role === "organizer" || role === "superadmin";
 }
 
-/** Organizer or superadmin: can reach /admin/staff and /admin/announcements. */
+/** Organizer or superadmin: can reach /admin/trek, /admin/staff and /admin/announcements. */
 export function canManageStaff(role: UserRole): boolean {
   return role === "organizer" || role === "superadmin";
 }

@@ -48,33 +48,34 @@ export default async function AdminHomePage() {
           </Link>
         </section>
 
-        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
-          <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
-            The Third Space Trek
-          </h2>
-          <p className="font-body text-[14px] leading-relaxed text-base-800">
-            Teams log an hourly photo of themselves working somewhere in the city. Photos score
-            the moment they land, so review is a correction tool - rejecting one removes its
-            points and hands the 2 point discovery bonus to that team&apos;s next photo at the
-            same spot. Open, close and reschedule the hunt from the same page.
-          </p>
-          <Link
-            href="/admin/trek"
-            className="font-display text-sm font-medium tracking-tight text-text-brand-accent hover:text-orange"
-          >
-            Review trek photos →
-          </Link>
-        </section>
-
         {canSeeOrganizerLinks && (
           <>
+            <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
+              <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
+                The Third Space Trek
+              </h2>
+              <p className="font-body text-[14px] leading-relaxed text-base-800">
+                Teams log an hourly photo of themselves working somewhere in the city. Photos
+                score the moment they land, so review is a correction tool - rejecting one
+                removes its points and hands the 2 point discovery bonus to that team&apos;s
+                next photo at the same spot. Open, close and reschedule the hunt from the same
+                page.
+              </p>
+              <Link
+                href="/admin/trek"
+                className="font-display text-sm font-medium tracking-tight text-text-brand-accent hover:text-orange"
+              >
+                Review trek photos →
+              </Link>
+            </section>
+
             <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
               <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
                 Staff
               </h2>
               <p className="font-body text-[14px] leading-relaxed text-base-800">
-                Promote hackers to volunteer, and manage volunteer and organizer roles. Organizer
-                rows are read-only unless you&apos;re a superadmin.
+                Promote hackers to volunteer, and manage volunteer and organizer roles.
+                Organizer rows are read-only unless you&apos;re a superadmin.
               </p>
               <Link
                 href="/admin/staff"

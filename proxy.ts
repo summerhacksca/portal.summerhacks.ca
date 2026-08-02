@@ -80,9 +80,9 @@ export async function proxy(request: NextRequest) {
       return redirect(new URL(destination, request.url));
     }
 
-    // Staff management and announcements are organizer/superadmin only -
-    // volunteers can reach the rest of /admin.
     const isOrganizerOnlyRoute =
+      pathname === "/admin/trek" ||
+      pathname.startsWith("/admin/trek/") ||
       pathname === "/admin/staff" ||
       pathname.startsWith("/admin/staff/") ||
       pathname === "/admin/announcements" ||

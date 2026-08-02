@@ -16,15 +16,19 @@ export const dynamic = "force-dynamic";
  * Staff-only shell. Access is enforced in proxy.ts (`canAccessAdmin`) and again
  * by the `can_access_admin()` RLS policies, so there is no auth check here -
  * the one read below is just to decide whether to render the organizer-only
- * nav links, not a gate. /admin/staff and /admin/announcements re-check and
- * redirect on their own if a volunteer reaches them directly.
+ * nav links, not a gate. /admin/trek, /admin/staff and /admin/announcements
+ * re-check and redirect on their own if a volunteer reaches them directly.
  */
-export default async function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function AdminLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const canSeeOrganizerLinks = user ? canManageStaff(getRoleFromAppMetadata(user.app_metadata)) : false;
+  const canSeeOrganizerLinks = user
+    ? canManageStaff(getRoleFromAppMetadata(user.app_metadata))
+    : false;
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page">
@@ -54,14 +58,14 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
           >
             NFC tags
           </Link>
-          <Link
-            href="/admin/trek"
-            className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
-          >
-            Trek
-          </Link>
           {canSeeOrganizerLinks && (
             <>
+              <Link
+                href="/admin/trek"
+                className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
+              >
+                Trek
+              </Link>
               <Link
                 href="/admin/staff"
                 className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"

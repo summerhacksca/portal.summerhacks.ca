@@ -1,6 +1,8 @@
+import { redirect } from "next/navigation";
 import { TrekReviewList, type TrekReviewRow } from "@/components/admin/TrekReviewList";
 import { TrekSettingsForm } from "@/components/admin/TrekSettingsForm";
 import { SectionHeader } from "@/components/portal/ui/SectionHeader";
+import { canManageStaff, getRoleFromAppMetadata } from "@/lib/auth/roles";
 import {
   getPortalProfiles,
   getScavengerAdminTeams,
@@ -9,6 +11,7 @@ import {
   getTrekPhotoUrls,
   getTrekReviewQueue,
 } from "@/lib/portal/queries";
+import { createClient } from "@/lib/supabase/server";
 
 const TIME_ZONE = "America/Toronto";
 
@@ -37,6 +40,17 @@ function toDatetimeLocal(iso: string | undefined): string {
 }
 
 export default async function AdminTrekPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const viewerRole = user ? getRoleFromAppMetadata(user.app_metadata) : "user";
+
+  if (!user || !canManageStaff(viewerRole)) {
+    redirect("/admin");
+  }
+
   const [settings, teams, locations, queue, profiles] = await Promise.all([
     getScavengerSettings(),
     getScavengerAdminTeams(),
