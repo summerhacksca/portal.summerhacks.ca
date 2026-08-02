@@ -87,21 +87,6 @@ export type MapZone = {
   sort_order: number;
 };
 
-export type FaqItem = {
-  id: string;
-  question: string;
-  answer: string;
-  sort_order: number;
-};
-
-export type HelpContact = {
-  id: string;
-  topic: string;
-  contact: string;
-  location: string;
-  sort_order: number;
-};
-
 /**
  * The Third Space Trek - the team scavenger hunt (migrations/0009).
  *

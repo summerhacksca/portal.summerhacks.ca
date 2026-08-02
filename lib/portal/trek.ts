@@ -159,8 +159,7 @@ export function pointsLabel(points: number): string {
 
 // ---------------------------------------------------------------------------
 // Rules copy, straight from SummerHacks Scavenger Hunt.pdf. Hard-coded rather
-// than seeded, following the FAQ_ITEMS / HELP_CONTACTS precedent in
-// ./staticContent.ts - this text changes with the PDF, not with the database.
+// than seeded - this text changes with the PDF, not with the database.
 // ---------------------------------------------------------------------------
 
 export const TREK_TAGLINE = "Work from somewhere new.";

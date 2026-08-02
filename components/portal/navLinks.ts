@@ -10,7 +10,6 @@ export const TABS = [
 	{ href: "/portal/trek", label: "Space Trek" },
 	{ href: "/portal/map", label: "Map" },
 	{ href: "/portal/profile", label: "Profile" },
-	{ href: "/portal/help", label: "FAQ" },
 ];
 
 export const AGORIZE_URL = "https://agorize.com"; // TODO: Update this URL

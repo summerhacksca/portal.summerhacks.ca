@@ -131,8 +131,6 @@ GRANT ALL ON public.map_zones TO service_role;
 
 -- =========================================================
 -- Seed data (ported from the Hacker Portal design mockup)
--- FAQ and "Who do I ask?" directory are hardcoded in the app
--- (see lib/portal/staticContent.ts) rather than stored here.
 -- Event weekend: Sat Aug 8 (online) - Sun Aug 9 (in-person), Toronto (EDT, UTC-4)
 -- =========================================================
 
