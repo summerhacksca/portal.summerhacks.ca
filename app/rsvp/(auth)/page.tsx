@@ -117,74 +117,64 @@ function SelectField({
 
 	return (
 		<main className="relative flex min-h-screen flex-col items-center justify-center gap-16 self-stretch overflow-hidden bg-[#fffaf2] p-3 text-[#221b14]">
+			{/* Offsets live in classes rather than inline styles so they can take a
+			    breakpoint - the desktop values are tuned for a wide viewport and
+			    push the flowers entirely out of frame on a phone. <main> is
+			    overflow-hidden, so they bleed off-edge without causing page scroll. */}
 			<img
 				src="/assets/flower1.png"
 				alt=""
-				className="pointer-events-none absolute select-none"
-				style={{
-					left: -380,
-					bottom: -502.523,
-					transform: "scale(0.5)",
-				}}
+				className="pointer-events-none absolute bottom-[-260px] left-[-180px] scale-[0.28] select-none md:bottom-[-502px] md:left-[-380px] md:scale-50"
 			/>
 			<img
 				src="/assets/flower2.png"
 				alt=""
-				className="pointer-events-none absolute select-none"
-				style={{
-					right: -311,
-					bottom: -794.523,
-					transform: "scale(0.5)",
-				}}
+				className="pointer-events-none absolute bottom-[-420px] right-[-150px] scale-[0.28] select-none md:bottom-[-794px] md:right-[-311px] md:scale-50"
 			/>
 			<img
 				src="/assets/flower3.png"
 				alt=""
-				className="pointer-events-none absolute select-none"
-				style={{ right: -377, top: -287, transform: "scale(0.5)" }}
+				className="pointer-events-none absolute right-[-190px] top-[-150px] scale-[0.28] select-none md:right-[-377px] md:top-[-287px] md:scale-50"
 			/>
 			<img
 				src="/assets/flower4.png"
 				alt=""
-				className="pointer-events-none absolute select-none"
-				style={{
-					left: -397,
-					top: -388,
-					transform: "scale(0.5)",
-				}}
+				className="pointer-events-none absolute left-[-200px] top-[-200px] scale-[0.28] select-none md:left-[-397px] md:top-[-388px] md:scale-50"
 			/>
-			<div className="relative z-10 flex w-full flex-col items-start gap-25 self-stretch p-9">
+			<div className="relative z-10 flex w-full flex-col items-start gap-12 self-stretch p-5 sm:p-9 sm:gap-25">
 				<section className="flex w-full flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
-					<div className="flex flex-col items-start justify-center gap-8 self-stretch py-12">
+					<div className="flex flex-col items-start justify-center gap-8 self-stretch py-6 sm:py-12">
+						{/* Three 200px oranges are 600px+ of row - below md they shrink to
+						    a single 90px row and the second row drops entirely. */}
 						<div className="flex items-start justify-start gap-4">
 							<img
 								src="/assets/orange.svg"
 								alt=""
-								className="h-[200px] w-auto"
+								className="h-[90px] w-auto md:h-[200px]"
 							/>
 							<img
 								src="/assets/orange.svg"
 								alt=""
-								className="h-[200px] w-auto"
+								className="h-[90px] w-auto md:h-[200px]"
 							/>
 							<img
 								src="/assets/orange.svg"
 								alt=""
-								className="h-[200px] w-auto"
+								className="h-[90px] w-auto md:h-[200px]"
 							/>
 						</div>
 
 						<div className="space-y-3">
-							<h2 className="text-[32px] font-medium leading-tight tracking-[-0.03em] text-[#F80]">
+							<h2 className="text-[22px] font-medium leading-tight tracking-[-0.03em] text-[#F80] sm:text-[32px]">
 								Welcome to SummerHacks!
 							</h2>
-							<p className="text-[32px] leading-tight tracking-[-0.03em] text-[#15110d]">
+							<p className="text-[22px] leading-tight tracking-[-0.03em] text-[#15110d] sm:text-[32px]">
 								SummerHacks will be hosted in Downtown Toronto.
 								RSVP to join us under the sun.
 							</p>
 						</div>
 
-						<div className="flex items-start justify-start gap-4">
+						<div className="hidden items-start justify-start gap-4 md:flex">
 							<img
 								src="/assets/orange.svg"
 								alt=""
@@ -208,10 +198,10 @@ function SelectField({
 						className="flex w-full max-w-full flex-col items-start justify-center gap-5 self-stretch"
 					>
 						<header className="w-full space-y-4">
-							<h1 className="text-[31px] font-medium leading-none tracking-[-0.04em] text-[#15110d] sm:text-[33px]">
+							<h1 className="text-[26px] font-medium leading-none tracking-[-0.04em] text-[#15110d] sm:text-[31px] md:text-[33px]">
 								SummerHacker RSVP
 							</h1>
-							<p className="max-w-152 text-[22px] leading-[1.08] tracking-[-0.03em] text-[#2f2a26] sm:text-[26px]">
+							<p className="max-w-152 text-[18px] leading-[1.08] tracking-[-0.03em] text-[#2f2a26] sm:text-[22px] md:text-[26px]">
 								SummerHacks will be hosted in Downtown Toronto.
 								RSVP to join us under the sun.
 							</p>
@@ -251,7 +241,7 @@ function SelectField({
 						<button
 							type="submit"
 							disabled={submitting}
-							className="inline-flex h-14 items-center justify-center gap-2 self-start rounded-[100px] bg-[#F80] px-6 text-white transition-colors hover:bg-[#e67300] disabled:opacity-50"
+							className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[100px] bg-[#F80] px-6 text-white transition-colors hover:bg-[#e67300] disabled:opacity-50 sm:w-auto sm:self-start"
 						>
 							{submitting
 								? "Submitting..."

@@ -33,6 +33,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# hacker lists consumed by scripts/ — personal data, keep out of git
+/scripts/data/*
+!/scripts/data/README.md
+!/scripts/data/*.example.json
+# scripts/data/
+
 # vercel
 .vercel
 
