@@ -138,3 +138,26 @@ body {
   color: var(--foreground);
   font-family: 'Maison Neue', Helvetica, sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+   Postage-stamp perforation for the trek collection (StampCollection.tsx).
+   Four notch strips - one per edge - intersected so each subtracts only its
+   own side.
+
+   Three things to know before touching this:
+   - mask-composite MUST stay after the mask shorthand; the shorthand resets it.
+   - a masked box clips box-shadow AND outline, so the stamps take their shadow
+     and their focus ring from the unmasked wrapper around them.
+   - no -webkit- prefixes by hand: Lightning CSS emits the prefixed mask and
+     -webkit-mask-composite: source-in pair from these two declarations.
+   --------------------------------------------------------------------------- */
+.trek-stamp {
+  --notch: 5px;
+  --step: 17px;
+  mask:
+    radial-gradient(var(--notch) at 50% 0,    #0000 98%, #000) 0 0 / var(--step) 100% repeat-x,
+    radial-gradient(var(--notch) at 50% 100%, #0000 98%, #000) 0 0 / var(--step) 100% repeat-x,
+    radial-gradient(var(--notch) at 0    50%, #0000 98%, #000) 0 0 / 100% var(--step) repeat-y,
+    radial-gradient(var(--notch) at 100% 50%, #0000 98%, #000) 0 0 / 100% var(--step) repeat-y;
+  mask-composite: intersect;
+}

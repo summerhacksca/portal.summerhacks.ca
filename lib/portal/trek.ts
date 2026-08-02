@@ -122,6 +122,33 @@ export function formatTrekTime(iso: string): string {
   });
 }
 
+/**
+ * Split date/time for a stamp caption - { date: "SAT AUG 8", time: "2:14 PM" }.
+ * Two parts rather than one string so the stamp can set them on their own line
+ * without splitting on a separator.
+ */
+export function formatStampMeta(iso: string): { date: string; time: string } {
+  const at = new Date(iso);
+
+  return {
+    date: at
+      .toLocaleString("en-US", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        timeZone: TIME_ZONE,
+      })
+      // "Sat, Aug 8" -> "SAT AUG 8" reads like an ink date stamp.
+      .replace(/,/g, "")
+      .toUpperCase(),
+    time: at.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: TIME_ZONE,
+    }),
+  };
+}
+
 /** Value the location <select> uses for the free-text "somewhere else" option. */
 export const CUSTOM_LOCATION_VALUE = "__custom__";
 
