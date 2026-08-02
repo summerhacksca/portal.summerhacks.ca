@@ -8,7 +8,7 @@ export function PortalFooter() {
 				Copyright © SummerHacks {new Date().getFullYear()}
 			</span>
 			<span className="font-body text-[13px] text-white/80">
-				Stuck? Ask a volunteer wearing an orange lanyard.
+				Stuck? Ask an volunteer in a red shirt.
 			</span>
 		</footer>
 	);
