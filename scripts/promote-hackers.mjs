@@ -100,7 +100,9 @@ function readEmailsFrom(filePath) {
 
   return parsed.map((item, index) => {
     if (typeof item !== "string" || !item.trim()) {
-      throw new Error(`${label}[${index}]: expected an email address, got ${JSON.stringify(item)}`);
+      throw new Error(
+        `${label}[${index}]: expected an email address, got ${JSON.stringify(item)}`,
+      );
     }
     return item.trim();
   });
