@@ -1,6 +1,6 @@
 -- Run this SQL in your Supabase Dashboard → SQL Editor
 -- This creates the tables needed for the event-day Hacker Portal
--- (Home, Schedule, Venue Map, Sponsors, Profile, Help Desk) in the
+-- (Home, Schedule, Venue Map, Profile, Help Desk) in the
 -- `public` schema.
 --
 -- Existing tables (public.application_submissions, public.rsvp_submissions) are untouched.
@@ -44,7 +44,7 @@ GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 
 -- =========================================================
--- public.tracks - canonical track list (profile selector, sponsor badges)
+-- public.tracks - canonical track list (profile selector)
 -- =========================================================
 CREATE TABLE IF NOT EXISTS public.tracks (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -63,29 +63,6 @@ CREATE POLICY "Authenticated users can read tracks" ON public.tracks
 
 GRANT SELECT ON public.tracks TO authenticated;
 GRANT ALL ON public.tracks TO service_role;
-
--- =========================================================
--- public.sponsors - Sponsor Board cards
--- =========================================================
-CREATE TABLE IF NOT EXISTS public.sponsors (
-	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	name text NOT NULL,
-	track text NOT NULL,
-	challenge text NOT NULL,
-	prize text NOT NULL,
-	logo_url text,
-	sort_order int NOT NULL DEFAULT 0,
-	created_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.sponsors ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users can read sponsors" ON public.sponsors
-	FOR SELECT TO authenticated
-	USING (true);
-
-GRANT SELECT ON public.sponsors TO authenticated;
-GRANT ALL ON public.sponsors TO service_role;
 
 -- =========================================================
 -- public.schedule_events - Master Schedule
@@ -170,21 +147,6 @@ INSERT INTO public.tracks (name, slug, accent_color, sort_order) VALUES
 	('Education', 'education', 'var(--orange)', 8)
 ON CONFLICT (slug) DO NOTHING;
 
-INSERT INTO public.sponsors (name, track, challenge, prize, sort_order) VALUES
-	('Nimbus Cloud', 'Infrastructure', 'Build a tool that makes cloud costs visible and understandable for small teams.', '$1,500 + mentorship', 1),
-	('Fenwick Robotics', 'Hardware', 'Prototype a sensor-driven fix for a real-world accessibility problem.', '$1,200 + dev kits', 2),
-	('BrightLedger', 'Fintech', 'Design a safer way for students to split and track shared expenses.', '$1,000 cash', 3),
-	('Solstice Health', 'Health', 'Create a lightweight way for campus clinics to triage walk-ins.', '$1,000 cash', 4),
-	('Voltway Energy', 'Sustainability', 'Best hack that nudges households toward lower peak-hour energy use.', '$1,500 cash', 5),
-	('Greenhouse Analytics', 'Sustainability', 'Turn open agricultural data into an actionable dashboard for small farms.', '$800 cash', 6),
-	('Pathfinder Labs', 'AI/ML', 'Most creative use of a language model for accessibility or education.', '$1,500 + API credits', 7),
-	('Northwind Data', 'Data', 'Best visualization built entirely on a public civic dataset.', '$800 cash', 8),
-	('Cobalt Systems', 'Security', 'Build a tool that helps small teams spot leaked credentials early.', '$1,000 cash', 9),
-	('Everline Finance', 'Fintech', 'Reimagine the first-time investing experience for a 19-year-old.', '$1,000 cash', 10),
-	('Lumen AI', 'AI/ML', 'Best assistant that helps hackers debug faster during the event itself.', '$1,200 + API credits', 11),
-	('Cedar & Co', 'Education', 'Design a tool that makes group study sessions actually stick.', '$700 cash', 12),
-	('Trailhead Robotics', 'Hardware', 'Best use of a microcontroller kit to solve an everyday annoyance.', '$1,000 + dev kits', 13);
-
 INSERT INTO public.schedule_events (starts_at, title, type, location, sort_order) VALUES
 	-- Day 1 · Sat Aug 8 · Online
 	('2026-08-08T10:00:00-04:00', 'Opening ceremony (livestream)', 'Ceremony', 'All tracks · Zoom A', 1),
@@ -208,7 +170,6 @@ INSERT INTO public.schedule_events (starts_at, title, type, location, sort_order
 
 INSERT INTO public.announcements (channel, body, accent, created_at) VALUES
 	('announcements', 'Breakfast is live in The Yard until 9:30 - grab something before workshops start.', 'var(--orange)', now() - interval '18 minutes'),
-	('announcements', 'Sponsor booths in Market Hall open at 11:30. Bring questions for Fenwick Robotics and Cobalt Systems.', 'rgba(42,42,42,0.1)', now() - interval '50 minutes'),
 	('logistics', 'Wifi network is "SummerHacks-Guest", password is on your lanyard.', 'rgba(42,42,42,0.1)', now() - interval '85 minutes'),
 	('announcements', 'Reminder: submissions lock at 2:00 PM sharp on Agorize. No late submissions.', 'rgba(42,42,42,0.1)', now() - interval '120 minutes');
 

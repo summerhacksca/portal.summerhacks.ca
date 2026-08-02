@@ -15,7 +15,6 @@ import type {
   ScavengerSettings,
   ScheduleEvent,
   ScoredSubmission,
-  Sponsor,
   Track,
   TrekReviewSubmission,
 } from "./types";
@@ -69,20 +68,6 @@ export async function getTracks(): Promise<Track[]> {
     return [];
   }
   return data as Track[];
-}
-
-export async function getSponsors(): Promise<Sponsor[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("sponsors")
-    .select("*")
-    .order("sort_order", { ascending: true });
-
-  if (error) {
-    console.error("Failed to fetch sponsors:", error);
-    return [];
-  }
-  return data as Sponsor[];
 }
 
 export async function getSchedule(): Promise<ScheduleEvent[]> {

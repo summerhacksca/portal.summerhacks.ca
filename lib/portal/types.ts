@@ -19,16 +19,6 @@ export type Track = {
   sort_order: number;
 };
 
-export type Sponsor = {
-  id: string;
-  name: string;
-  track: string;
-  challenge: string;
-  prize: string;
-  logo_url: string | null;
-  sort_order: number;
-};
-
 export const SCHEDULE_EVENT_TYPES = [
   "Workshop",
   "Meal",

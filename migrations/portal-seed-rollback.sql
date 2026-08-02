@@ -12,7 +12,7 @@
 -- are organizer-managed only (no hacker-facing write policy), so this
 -- is safe to run any time you want a clean slate before re-seeding.
 -- =========================================================
--- TRUNCATE public.tracks, public.sponsors, public.schedule_events, public.announcements, public.map_zones;
+-- TRUNCATE public.tracks, public.schedule_events, public.announcements, public.map_zones;
 
 -- =========================================================
 -- Option B - delete only the known seed rows, matched by their
@@ -29,22 +29,6 @@ DELETE FROM public.tracks WHERE slug IN (
 	'data',
 	'security',
 	'education'
-);
-
-DELETE FROM public.sponsors WHERE name IN (
-	'Nimbus Cloud',
-	'Fenwick Robotics',
-	'BrightLedger',
-	'Solstice Health',
-	'Voltway Energy',
-	'Greenhouse Analytics',
-	'Pathfinder Labs',
-	'Northwind Data',
-	'Cobalt Systems',
-	'Everline Finance',
-	'Lumen AI',
-	'Cedar & Co',
-	'Trailhead Robotics'
 );
 
 DELETE FROM public.schedule_events WHERE (starts_at, title) IN (
@@ -70,7 +54,6 @@ DELETE FROM public.schedule_events WHERE (starts_at, title) IN (
 
 DELETE FROM public.announcements WHERE body IN (
 	'Breakfast is live in The Yard until 9:30 - grab something before workshops start.',
-	'Sponsor booths in Market Hall open at 11:30. Bring questions for Fenwick Robotics and Cobalt Systems.',
 	'Wifi network is "SummerHacks-Guest", password is on your lanyard.',
 	'Reminder: submissions lock at 2:00 PM sharp on Agorize. No late submissions.'
 );

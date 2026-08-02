@@ -10,7 +10,6 @@ const TABS = [
   { href: "/portal/schedule", label: "Schedule" },
   { href: "/portal/map", label: "Map" },
   { href: "/portal/trek", label: "Space Trek" },
-  { href: "/portal/sponsors", label: "Sponsors" },
   { href: "/portal/profile", label: "Profile" },
   { href: "/portal/help", label: "FAQ" },
 ];

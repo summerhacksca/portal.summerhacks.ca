@@ -29,7 +29,7 @@ export const FAQ_ITEMS: FaqItem[] = [
 	},
 	{
 		id: "switch-track",
-		question: "Can I switch sponsor challenges or tracks?",
+		question: "Can I switch tracks?",
 		answer:
 			"Yes, any time before the submission lock. Just update your profile and mention it to a judge at judging.",
 		sort_order: 4,
@@ -66,38 +66,31 @@ export const HELP_CONTACTS: HelpContact[] = [
 		sort_order: 1,
 	},
 	{
-		id: "sponsors",
-		topic: "Sponsor challenges & prizes",
-		contact: "Sponsor booth reps",
-		location: "Market Hall, 11:30 AM-5:30 PM",
-		sort_order: 2,
-	},
-	{
 		id: "judging",
 		topic: "Judging & submissions",
 		contact: "Judging captains",
 		location: "Container Row A/B, or #judging on Discord",
-		sort_order: 3,
+		sort_order: 2,
 	},
 	{
 		id: "wifi",
 		topic: "Wifi / tech issues",
 		contact: "Tech volunteers",
 		location: "#tech-help on Discord",
-		sort_order: 4,
+		sort_order: 3,
 	},
 	{
 		id: "medical",
 		topic: "Medical / safety",
 		contact: "On-site first aid",
 		location: "Registration desk, Main Stage",
-		sort_order: 5,
+		sort_order: 4,
 	},
 	{
 		id: "team-formation",
 		topic: "Team formation",
 		contact: "Organizer team",
 		location: "#team-formation on Discord",
-		sort_order: 6,
+		sort_order: 5,
 	},
 ];

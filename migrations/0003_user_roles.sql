@@ -160,13 +160,6 @@ CREATE POLICY "Portal users can read tracks" ON public.tracks
 	FOR SELECT TO authenticated
 	USING (public.can_access_portal());
 
--- sponsors
-DROP POLICY IF EXISTS "Authenticated users can read sponsors" ON public.sponsors;
-
-CREATE POLICY "Portal users can read sponsors" ON public.sponsors
-	FOR SELECT TO authenticated
-	USING (public.can_access_portal());
-
 -- schedule_events
 DROP POLICY IF EXISTS "Authenticated users can read schedule" ON public.schedule_events;
 
