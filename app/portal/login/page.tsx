@@ -38,8 +38,8 @@ export default function PortalLoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-surface-page p-3">
-      <div className="flex w-full max-w-md flex-col items-center gap-6 rounded-sm bg-surface-card p-8 shadow-pop">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-surface-page p-5">
+      <div className="flex w-full max-w-md flex-col items-center gap-6 rounded-sm bg-surface-card p-6 sm:p-8 shadow-pop">
         <Image src="/icon.svg" alt="SummerHacks" width={44} height={44} />
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="font-display text-[26px] font-medium tracking-tighter text-base-800">
@@ -75,7 +75,7 @@ export default function PortalLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex h-14 items-center justify-center gap-2 self-end rounded-pill bg-orange px-6 font-display text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-pill bg-orange px-6 font-display text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto sm:self-end"
           >
             {loading ? "Sending…" : "Send magic link"}
             <ArrowUp size={18} className="rotate-90" />

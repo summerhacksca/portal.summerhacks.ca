@@ -79,7 +79,7 @@ export function TrekPanel({
 					role="dialog"
 					aria-modal="true"
 					aria-labelledby={titleId}
-					className={`absolute inset-y-0 flex w-[min(420px,88vw)] flex-col gap-5 overflow-y-auto bg-surface-card px-6 pb-10 pt-6 shadow-pop transition-transform duration-300 ease-out ${edgeClass}`}
+					className={`absolute inset-y-0 flex w-[min(420px,88vw)] flex-col gap-5 overflow-y-auto bg-surface-card px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-6 shadow-pop transition-transform duration-300 ease-out ${edgeClass}`}
 				>
 					<h2
 						id={titleId}

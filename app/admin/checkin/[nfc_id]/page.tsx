@@ -18,7 +18,7 @@ export default async function AdminCheckinPage({
     return (
       <main className="mx-auto flex w-full max-w-[560px] flex-col gap-5 px-6 py-8 sm:px-9">
         <SectionHeader title="Check-in" />
-        <div className="flex flex-col gap-3 rounded-sm bg-surface-card p-7 shadow-card">
+        <div className="flex flex-col gap-3 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
           <span className="font-display text-lg font-medium tracking-tight text-base-800">
             No hacker found for this tag
           </span>

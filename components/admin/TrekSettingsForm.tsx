@@ -51,7 +51,7 @@ export function TrekSettingsForm({
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="flex flex-col gap-5 rounded-sm bg-surface-card p-7 shadow-card"
+			className="flex flex-col gap-5 rounded-sm bg-surface-card p-5 shadow-card sm:p-7"
 		>
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="flex flex-col gap-2">

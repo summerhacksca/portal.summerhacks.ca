@@ -85,14 +85,25 @@ export function VenueMapView() {
 
 			{expanded && (
 				<div
-					className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-					onClick={() => setExpanded(false)}
+					role="dialog"
+					aria-modal="true"
+					aria-label={`${view.label} floor plan, expanded`}
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
 				>
+					{/* Backdrop is a button rather than a click handler on the wrapper,
+					    matching the other overlays - a div with onClick isn't reachable
+					    by keyboard and swallows taps meant for the image. */}
+					<button
+						type="button"
+						aria-label="Close"
+						onClick={() => setExpanded(false)}
+						className="absolute inset-0 h-full w-full cursor-default"
+					/>
 					<button
 						type="button"
 						onClick={() => setExpanded(false)}
 						aria-label="Close expanded floor plan"
-						className="absolute right-6 top-6 flex h-9 w-9 items-center justify-center rounded-pill bg-base-0 font-display text-base-800 shadow-pop"
+						className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-pill bg-base-0 font-display text-base-800 shadow-pop sm:right-6 sm:top-6"
 					>
 						×
 					</button>
@@ -100,8 +111,7 @@ export function VenueMapView() {
 					<img
 						src={view.src}
 						alt={`${view.label} floor plan of the venue, expanded`}
-						className="max-h-[90vh] max-w-[95vw] object-contain"
-						onClick={(event) => event.stopPropagation()}
+						className="pointer-events-none relative max-h-[90vh] max-w-full object-contain"
 					/>
 				</div>
 			)}

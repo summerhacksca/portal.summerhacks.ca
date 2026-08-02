@@ -14,7 +14,7 @@ export default async function MapPage() {
   const zones = await getMapZones();
 
   return (
-    <main className="mx-auto flex w-full max-w-290 flex-col gap-7 px-9 py-8 pb-20">
+    <main className="mx-auto flex w-full max-w-290 flex-col gap-7 px-6 py-8 pb-20 sm:px-9">
       <p className="font-body text-[14px] text-sun-400">
         Stackt Market, 28 Bathurst St, Toronto - in-person day.
       </p>

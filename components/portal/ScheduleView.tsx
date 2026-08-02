@@ -84,8 +84,13 @@ export function ScheduleView({ events }: { events: ScheduleEvent[] }) {
 					Schedule coming soon.
 				</p>
 			) : (
+				/* Below `sm` each row is a stacked card - the fixed 490px of track
+				   would crush the 1fr Event column to nothing on a phone. DOM order
+				   stays Time/Event/Type/Location so the grid auto-places correctly
+				   once it engages; `order-*` only reshuffles the mobile flex column
+				   to lead with the title. */
 				<div className="overflow-hidden rounded-sm bg-surface-card shadow-card">
-					<div className="grid grid-cols-[150px_1fr_140px_200px] bg-sun-50 px-6 py-3.5">
+					<div className="hidden bg-sun-50 px-6 py-3.5 sm:grid sm:grid-cols-[150px_1fr_140px_200px]">
 						{["Time", "Event", "Type", "Track / room"].map((label) => (
 							<span
 								key={label}
@@ -98,22 +103,22 @@ export function ScheduleView({ events }: { events: ScheduleEvent[] }) {
 					{active.events.map((row) => (
 						<div
 							key={row.id}
-							className="grid grid-cols-[150px_1fr_140px_200px] items-center border-t border-black/[0.06] px-6 py-4"
+							className="flex flex-col gap-1.5 border-t border-black/[0.06] px-5 py-4 sm:grid sm:grid-cols-[150px_1fr_140px_200px] sm:items-center sm:gap-0 sm:px-6"
 						>
-							<span className="font-mono text-[12px] text-base-800">
+							<span className="order-2 font-mono text-[12px] text-base-800 sm:order-none">
 								{formatTimeRange(row.starts_at, row.ends_at)}
 							</span>
-							<span className="font-display text-[15px] font-medium tracking-tight text-base-800">
+							<span className="order-1 font-display text-base font-medium tracking-tight text-base-800 sm:order-none sm:text-[15px]">
 								{row.title}
 							</span>
-							<span className="inline-flex items-center gap-1.5 font-body text-[12px] text-base-800">
+							<span className="order-3 inline-flex items-center gap-1.5 font-body text-[12px] text-base-800 sm:order-none">
 								<span
 									className="h-2 w-2 flex-shrink-0 rounded-full"
 									style={{ background: EVENT_TYPE_COLOR[row.type] }}
 								/>
 								{row.type}
 							</span>
-							<span className="font-body text-[13px] text-sun-400">
+							<span className="order-4 font-body text-[13px] text-sun-400 sm:order-none">
 								{row.location}
 							</span>
 						</div>

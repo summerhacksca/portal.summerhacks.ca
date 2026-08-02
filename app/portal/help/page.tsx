@@ -7,7 +7,7 @@ export default function HelpPage() {
 	const directory = HELP_CONTACTS;
 
 	return (
-		<main className="mx-auto flex w-full max-w-[1160px] flex-col gap-11 px-9 py-8 pb-20">
+		<main className="mx-auto flex w-full max-w-[1160px] flex-col gap-11 px-6 py-8 pb-20 sm:px-9">
 			<section className="flex flex-col gap-5">
 				<SectionHeader title="FAQ" />
 				{faq.length === 0 ? (
@@ -21,8 +21,11 @@ export default function HelpPage() {
 
 			<section className="flex flex-col gap-5">
 				<SectionHeader title="Who do I ask?" />
+				{/* Three columns of prose don't fit a phone, so below `sm` each row
+				    stacks into a card. Topic leads in DOM order already, so unlike
+				    ScheduleView this needs no order-* reshuffling. */}
 				<div className="overflow-hidden rounded-sm bg-surface-card shadow-card">
-					<div className="grid grid-cols-3 bg-sun-50 px-6 py-3.5">
+					<div className="hidden bg-sun-50 px-6 py-3.5 sm:grid sm:grid-cols-3">
 						{["Topic", "Contact", "Where to find them"].map((label) => (
 							<span
 								key={label}
@@ -35,7 +38,7 @@ export default function HelpPage() {
 					{directory.map((row) => (
 						<div
 							key={row.id}
-							className="grid grid-cols-3 items-center border-t border-black/[0.06] px-6 py-4"
+							className="flex flex-col gap-1 border-t border-black/[0.06] px-5 py-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-0 sm:px-6"
 						>
 							<span className="font-display text-sm font-medium tracking-tight text-base-800">
 								{row.topic}

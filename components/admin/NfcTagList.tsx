@@ -69,7 +69,9 @@ export function NfcTagList({ tags }: Readonly<{ tags: NfcTag[] }>) {
                 className="h-16 w-16 shrink-0 rounded-sm bg-white"
               />
 
-              <div className="flex min-w-45 flex-1 flex-col gap-0.5">
+              {/* Full-width on mobile so the 180px floor doesn't fight the QR
+                  thumbnail and the Copy button for a 375px row. */}
+              <div className="order-last flex w-full min-w-0 flex-col gap-0.5 sm:order-none sm:w-auto sm:min-w-45 sm:flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-display text-[15px] font-medium tracking-tight text-base-800">
                     {tag.fullName || "Name not set"}

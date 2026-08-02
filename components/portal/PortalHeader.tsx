@@ -3,32 +3,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MobileNavSheet } from "./MobileNavSheet";
+import { AGORIZE_URL, DISCORD_URL, initials, TABS } from "./navLinks";
 import { NavPillGroup, navPillClass } from "./ui/NavPill";
 
-const TABS = [
-  { href: "/portal", label: "Home" },
-  { href: "/portal/schedule", label: "Schedule" },
-  { href: "/portal/trek", label: "Space Trek" },
-  { href: "/portal/map", label: "Map" },
-  { href: "/portal/profile", label: "Profile" },
-  { href: "/portal/help", label: "FAQ" },
-];
-
-const AGORIZE_URL = "https://agorize.com"; // TODO: Update this URL
-const DISCORD_URL = "https://discord.gg/8DsFxnKSf";
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-export function PortalHeader({ fullName }: Readonly<{ fullName: string }>) {
+/**
+ * Two nav layouts, swapped at `lg`. The full bar needs roughly 810px of content
+ * (logo ~150 + six pills ~420 + the two CTAs ~165 + avatar + gaps), so it
+ * doesn't actually fit at `md`; below `lg` everything but the logo and avatar
+ * moves into MobileNavSheet.
+ */
+export function PortalHeader({
+  fullName,
+  signedIn,
+}: Readonly<{ fullName: string; signedIn: boolean }>) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-black/8 bg-sun-50/90 px-9 py-3.5 backdrop-blur-sm">
+    <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-black/8 bg-sun-50/90 px-6 py-3.5 backdrop-blur-sm sm:px-9">
       <Link href="/portal" className="flex shrink-0 items-center gap-2.5">
         <Image
           src="/icon.svg"
@@ -47,37 +39,49 @@ export function PortalHeader({ fullName }: Readonly<{ fullName: string }>) {
         </div>
       </Link>
 
-      <NavPillGroup>
-        {TABS.map((tab) => (
-          <Link key={tab.href} href={tab.href} className={navPillClass(pathname === tab.href)}>
-            {tab.label}
-          </Link>
-        ))}
-      </NavPillGroup>
+      <div className="hidden lg:block">
+        <NavPillGroup>
+          {TABS.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={navPillClass(pathname === tab.href)}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </NavPillGroup>
+      </div>
 
       <div className="flex shrink-0 items-center gap-2.5">
-        <a
+        {/* TODO: Re-enable this when ready */}
+        {/* <a
           href={AGORIZE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-9.5 items-center rounded-pill bg-base-900 px-4 font-display text-[13px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80"
+          className="hidden h-9.5 items-center rounded-pill bg-base-900 px-4 font-display text-[13px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80 lg:inline-flex"
         >
           Submit
-        </a>
+        </a> */}
         <a
           href={DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
+          className="hidden h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80 lg:inline-flex"
         >
           Discord
         </a>
-        <Link
-          href="/portal/profile"
-          className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-terracotta font-display text-[13px] font-semibold text-white"
-        >
-          {initials(fullName)}
-        </Link>
+        {signedIn && (
+          <Link
+            href="/portal/profile"
+            className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-terracotta font-display text-[13px] font-semibold text-white"
+          >
+            {initials(fullName)}
+          </Link>
+        )}
+        <div className="lg:hidden">
+          <MobileNavSheet signedIn={signedIn} />
+        </div>
       </div>
     </header>
   );

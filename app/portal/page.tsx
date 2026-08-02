@@ -35,7 +35,7 @@ export default async function PortalHomePage() {
   const trackLine = profile?.tracks?.length ? profile.tracks.join(", ") : "Not selected yet";
 
   return (
-    <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-9 px-9 py-8 pb-20">
+    <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-9 px-6 py-8 pb-20 sm:px-9">
       {/* Hero */}
       <section
         className="relative flex min-h-[220px] items-center overflow-hidden rounded-sm"
@@ -49,25 +49,27 @@ export default async function PortalHomePage() {
           className="absolute right-7 top-4"
           style={{ transform: "rotate(-8deg)" }}
         />
+        {/* Hidden on phones: at hero width these two sit on top of the name and
+            the QR card rather than beside them. */}
         <AppleGlyph
           size={26}
           color="var(--terracotta)"
-          className="absolute bottom-4 right-[70px]"
+          className="absolute bottom-4 right-[70px] hidden sm:block"
           style={{ transform: "rotate(10deg)" }}
         />
         <AppleGlyph
           size={24}
           color="var(--sun-300)"
-          className="absolute left-6 top-6"
+          className="absolute left-6 top-6 hidden sm:block"
           style={{ transform: "rotate(-15deg)" }}
         />
 
-        <div className="flex w-full flex-wrap items-center justify-between gap-6 p-8">
-          <div className="flex flex-col gap-2">
+        <div className="flex w-full flex-wrap items-center justify-between gap-6 p-6 sm:p-8">
+          <div className="flex min-w-0 flex-col gap-2">
             <span className="font-display text-sm font-medium tracking-tight text-sun-400">
               Orange you glad you&apos;re back?
             </span>
-            <h1 className="font-display text-4xl font-medium tracking-tight text-base-800">
+            <h1 className="font-display text-2xl font-medium tracking-tight text-base-800 sm:text-4xl">
               {profile?.full_name || "Hacker"}
             </h1>
             <span className="font-body text-sm text-base-800">
@@ -76,7 +78,7 @@ export default async function PortalHomePage() {
           </div>
 
           {profile && checkinQr && (
-            <div className="flex items-center gap-4 rounded-sm bg-white py-2.5 pl-5 pr-2.5 shadow-pop">
+            <div className="flex flex-wrap items-center gap-4 rounded-sm bg-white py-2.5 pl-5 pr-2.5 shadow-pop">
               <CheckinDrawer
                 checkedIn={isCheckedInAtRegistration(checkins, schedule)}
                 qrDataUrl={checkinQr.dataUrl}
@@ -106,14 +108,16 @@ export default async function PortalHomePage() {
             {announcements.map((note) => (
               <div
                 key={note.id}
-                className="flex gap-4 px-5 py-4.5"
+                className="flex flex-col gap-1.5 px-5 py-4.5 sm:flex-row sm:gap-4"
                 style={{
                   background:
                     note.accent === "var(--orange)" ? "var(--sun-50)" : "var(--base-0)",
                   borderLeft: `3px solid ${note.accent}`,
                 }}
               >
-                <div className="flex w-[120px] flex-shrink-0 flex-col gap-0.5">
+                {/* The 120px meta column is a sidebar on desktop and a one-line
+                    header on mobile, where it would otherwise eat a third of the row. */}
+                <div className="flex w-full flex-row items-center gap-2 sm:w-[120px] sm:flex-shrink-0 sm:flex-col sm:items-start sm:gap-0.5">
                   <span className="font-mono text-[11px] text-sun-400">
                     {relativeTime(note.created_at)}
                   </span>

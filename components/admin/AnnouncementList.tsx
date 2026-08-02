@@ -57,7 +57,9 @@ export function AnnouncementList({ announcements }: { announcements: Announcemen
 						key={note.id}
 						className="flex flex-wrap items-start gap-4 border-t border-black/6 px-5 py-4 first:border-t-0"
 					>
-						<div className="flex w-[120px] shrink-0 flex-col gap-0.5">
+						{/* Meta is a 120px sidebar on desktop and a one-line header on
+						    mobile, matching the portal home announcements feed. */}
+						<div className="flex w-full flex-row items-center gap-2 sm:w-[120px] sm:shrink-0 sm:flex-col sm:items-start sm:gap-0.5">
 							<span className="font-mono text-[11px] text-sun-400">
 								{relativeTime(note.created_at)}
 							</span>
@@ -66,7 +68,7 @@ export function AnnouncementList({ announcements }: { announcements: Announcemen
 							</span>
 						</div>
 
-						<p className="min-w-45 flex-1 font-body text-[14px] leading-relaxed text-base-800">
+						<p className="w-full min-w-0 font-body text-[14px] leading-relaxed text-base-800 sm:w-auto sm:min-w-45 sm:flex-1">
 							{note.body}
 						</p>
 

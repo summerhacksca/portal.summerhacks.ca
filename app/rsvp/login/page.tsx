@@ -40,8 +40,8 @@ export default function RSVPLoginPage() {
 	};
 
 	return (
-		<main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#fffaf2] p-3 text-[#221b14]">
-			<div className="flex w-full max-w-md flex-col items-center gap-6 rounded-[28px] bg-white p-8 shadow-sm">
+		<main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#fffaf2] p-5 text-[#221b14]">
+			<div className="flex w-full max-w-md flex-col items-center gap-6 rounded-[28px] bg-white p-6 sm:p-8 shadow-sm">
 				<h1 className="text-[28px] font-medium tracking-[-0.04em] text-[#15110d]">
 					Sign in to RSVP
 				</h1>
@@ -72,7 +72,7 @@ export default function RSVPLoginPage() {
 					<button
 						type="submit"
 						disabled={loading}
-						className="inline-flex h-14 items-center justify-center gap-2 self-end rounded-[100px] bg-[#F80] px-6 text-white transition-colors hover:bg-[#e67300] disabled:opacity-50"
+						className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[100px] bg-[#F80] px-6 text-white transition-colors hover:bg-[#e67300] disabled:opacity-50 sm:w-auto sm:self-end"
 					>
 						{loading ? "Sending..." : "Send magic link"}
 						<ArrowUp size={20} className="rotate-90" />

@@ -19,7 +19,10 @@ export default async function PortalLayout({
 
 	return (
 		<div className="flex min-h-screen flex-col bg-surface-page">
-			<PortalHeader fullName={profile?.full_name ?? ""} />
+			<PortalHeader
+				fullName={profile?.full_name ?? ""}
+				signedIn={Boolean(profile)}
+			/>
 			{children}
 			<PortalFooter />
 		</div>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { signOut } from "@/app/portal/actions";
 import { CheckinDrawer } from "@/components/portal/CheckinDrawer";
+import { initials } from "@/components/portal/navLinks";
 import { ProfileForm } from "@/components/portal/ProfileForm";
 import { SectionHeader } from "@/components/portal/ui/SectionHeader";
 import { getCheckinQr } from "@/lib/portal/checkinQr";
@@ -12,13 +13,6 @@ import {
   isCheckedInAtRegistration,
 } from "@/lib/portal/queries";
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 export default async function ProfilePage() {
   const [profile, allTracks, checkins, checkinEvents] = await Promise.all([
     getProfile(),
@@ -29,7 +23,7 @@ export default async function ProfilePage() {
 
   if (!profile) {
     return (
-      <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-7 px-9 py-8 pb-20">
+      <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-7 px-6 py-8 pb-20 sm:px-9">
         <p className="font-body text-[14px] text-sun-400">
           We couldn&apos;t load your profile. Try refreshing the page.
         </p>
@@ -40,25 +34,25 @@ export default async function ProfilePage() {
   const checkinQr = await getCheckinQr(profile.nfc_id);
 
   return (
-    <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-7 px-9 py-8 pb-20">
+    <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-7 px-6 py-8 pb-20 sm:px-9">
       <SectionHeader title="My profile" />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <div className="flex items-center gap-5 rounded-sm bg-surface-card p-7 shadow-card">
+        <div className="flex items-center gap-5 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
           {profile.avatar_url ? (
             <Image
               src={profile.avatar_url}
               alt={profile.full_name}
               width={88}
               height={88}
-              className="h-[88px] w-[88px] flex-shrink-0 rounded-full object-cover"
+              className="h-16 w-16 flex-shrink-0 rounded-full object-cover sm:h-[88px] sm:w-[88px]"
             />
           ) : (
-            <div className="flex h-[88px] w-[88px] flex-shrink-0 items-center justify-center rounded-full bg-terracotta font-display text-2xl font-semibold text-white">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-terracotta font-display text-xl font-semibold text-white sm:h-[88px] sm:w-[88px] sm:text-2xl">
               {initials(profile.full_name || profile.email)}
             </div>
           )}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex min-w-0 flex-col gap-1.5 break-words">
             <span className="font-display text-xl font-semibold tracking-tight text-base-800">
               {profile.full_name || "Add your name"}
             </span>
@@ -74,7 +68,7 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex flex-col items-start gap-2.5 rounded-sm bg-surface-card p-7 shadow-card">
+        <div className="flex flex-col items-start gap-2.5 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
           <CheckinDrawer
             checkedIn={isCheckedInAtRegistration(checkins, checkinEvents)}
             qrDataUrl={checkinQr.dataUrl}
@@ -87,7 +81,7 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 rounded-sm bg-surface-card p-7 shadow-card">
+      <div className="flex flex-col gap-5 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
         <span className="font-display text-sm font-medium tracking-tight text-sun-400">
           Edit your details
         </span>
@@ -100,7 +94,7 @@ export default async function ProfilePage() {
         />
       </div>
 
-      <div className="flex flex-col gap-3 rounded-sm bg-surface-card p-7 shadow-card">
+      <div className="flex flex-col gap-3 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
         <span className="font-display text-sm font-medium tracking-tight text-sun-400">
           Account
         </span>

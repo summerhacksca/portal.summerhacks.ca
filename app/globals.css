@@ -126,12 +126,10 @@
   --tracking-tightest: var(--tracking-tightest);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* No dark theme: every surface in the app is a hardcoded light token
+   (--surface-page / --surface-card), so flipping --foreground to a light value
+   here only produced near-white text on cream for any node without an explicit
+   text color. */
 
 body {
   background: var(--background);

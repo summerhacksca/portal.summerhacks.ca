@@ -31,7 +31,7 @@ export default async function AdminHomePage() {
       <SectionHeader title="Staff tools" />
 
       <div className="grid gap-5 md:grid-cols-2">
-        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-7 shadow-card">
+        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
           <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
             Checking hackers in
           </h2>
@@ -48,7 +48,7 @@ export default async function AdminHomePage() {
           </Link>
         </section>
 
-        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-7 shadow-card">
+        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
           <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
             The Third Space Trek
           </h2>
@@ -68,7 +68,7 @@ export default async function AdminHomePage() {
 
         {canSeeOrganizerLinks && (
           <>
-            <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-7 shadow-card">
+            <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
               <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
                 Staff
               </h2>
@@ -84,7 +84,7 @@ export default async function AdminHomePage() {
               </Link>
             </section>
 
-            <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-7 shadow-card">
+            <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
               <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
                 Announcements
               </h2>

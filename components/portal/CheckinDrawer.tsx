@@ -73,7 +73,7 @@ export function CheckinDrawer({
 					role="dialog"
 					aria-modal="true"
 					aria-labelledby="checkin-drawer-title"
-					className={`absolute inset-x-0 bottom-0 flex flex-col items-center gap-5 rounded-t-sm bg-surface-card px-6 pb-10 pt-4 shadow-pop transition-transform duration-300 ease-out ${
+					className={`absolute inset-x-0 bottom-0 flex flex-col items-center gap-5 rounded-t-sm bg-surface-card px-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-4 shadow-pop transition-transform duration-300 ease-out ${
 						open ? "translate-y-0" : "translate-y-full"
 					}`}
 				>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,15 @@ export const metadata: Metadata = {
 	icons: {
 		icon: "/icon.svg",
 	},
+};
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
+	// Lets the bottom sheets pad themselves past the iPhone home indicator with
+	// env(safe-area-inset-bottom) - without this the inset always resolves to 0.
+	viewportFit: "cover",
+	themeColor: "#fffbf6", // --sun-50, matches --surface-page
 };
 
 export default function RootLayout({

@@ -124,7 +124,7 @@ export function StaffRoleList({
 								key={person.user_id}
 								className="flex flex-wrap items-center gap-4 border-t border-black/6 px-5 py-4 first:border-t-0"
 							>
-								<div className="flex min-w-45 flex-1 flex-col gap-0.5">
+								<div className="flex w-full min-w-0 flex-col gap-0.5 sm:w-auto sm:min-w-45 sm:flex-1">
 									<span className="font-display text-[15px] font-medium tracking-tight text-base-800">
 										{person.full_name || "Name not set"}
 									</span>

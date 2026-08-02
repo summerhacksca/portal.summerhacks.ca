@@ -52,7 +52,7 @@ export function TeamGate({ maxTeamSize }: { maxTeamSize: number }) {
 	}
 
 	return (
-		<div className="flex flex-col gap-5 rounded-sm bg-surface-card p-7 shadow-card">
+		<div className="flex flex-col gap-5 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
 			<div className="flex flex-col gap-1.5">
 				<h2 className="font-display text-lg font-medium tracking-tight text-base-800">
 					You&apos;re not on a trek team yet
