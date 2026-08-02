@@ -16,7 +16,7 @@ const TABS = [
 
 // TODO: Update these URLs
 const AGORIZE_URL = "https://agorize.com";
-const DISCORD_URL = "https://discord.gg";
+const DISCORD_URL = "https://discord.gg/8DsFxnKSf";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
