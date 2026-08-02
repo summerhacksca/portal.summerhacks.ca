@@ -14,8 +14,7 @@ const TABS = [
   { href: "/portal/help", label: "FAQ" },
 ];
 
-// TODO: Update these URLs
-const AGORIZE_URL = "https://agorize.com";
+const AGORIZE_URL = "https://agorize.com"; // TODO: Update this URL
 const DISCORD_URL = "https://discord.gg/8DsFxnKSf";
 
 function initials(name: string) {
