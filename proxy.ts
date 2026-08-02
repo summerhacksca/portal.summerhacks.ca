@@ -4,29 +4,18 @@ import {
   canAccessAdmin,
   canAccessPortal,
   canManageStaff,
-  getRoleFromAccessToken,
+  getRoleFromAppMetadata,
 } from "@/lib/auth/roles";
-import { parseShSession } from "@/lib/auth/session";
 import { mergeSupabaseResponse, updateSupabaseSession } from "@/lib/supabase/proxy";
 
-function getSessionRole(request: NextRequest) {
-  const session = parseShSession(request.cookies.get("sh_session")?.value);
-  if (!session) return { session: null, role: null };
-
-  return {
-    session,
-    role: getRoleFromAccessToken(session.access_token),
-  };
-}
-
 export async function proxy(request: NextRequest) {
-  const supabaseResponse = await updateSupabaseSession(request);
+  const { response: supabaseResponse, user } = await updateSupabaseSession(request);
   const redirect = (url: URL | string) =>
     mergeSupabaseResponse(supabaseResponse, NextResponse.redirect(url));
 
   const { pathname } = request.nextUrl;
-  const { session, role } = getSessionRole(request);
-  const isAuthenticated = !!session;
+  const isAuthenticated = !!user;
+  const role = user ? getRoleFromAppMetadata(user.app_metadata) : null;
 
   // Redirect unauthenticated users from /rsvp to /rsvp/login
   if (pathname === "/rsvp") {
@@ -56,14 +45,14 @@ export async function proxy(request: NextRequest) {
       return redirect(loginUrl);
     }
 
-    if (!canAccessPortal(role!)) {
+    if (!role || !canAccessPortal(role)) {
       const unauthorizedUrl = new URL("/portal/unauthorized", request.url);
       return redirect(unauthorizedUrl);
     }
   }
 
-  if (isPortalLogin && isAuthenticated) {
-    const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
+  if (isPortalLogin && isAuthenticated && role) {
+    const destination = canAccessPortal(role) ? "/portal" : "/portal/unauthorized";
     return redirect(new URL(destination, request.url));
   }
 
@@ -75,8 +64,8 @@ export async function proxy(request: NextRequest) {
       return redirect(loginUrl);
     }
 
-    if (!canAccessAdmin(role!)) {
-      const destination = canAccessPortal(role!) ? "/portal" : "/portal/unauthorized";
+    if (!role || !canAccessAdmin(role)) {
+      const destination = role && canAccessPortal(role) ? "/portal" : "/portal/unauthorized";
       return redirect(new URL(destination, request.url));
     }
 
@@ -88,7 +77,7 @@ export async function proxy(request: NextRequest) {
       pathname === "/admin/announcements" ||
       pathname.startsWith("/admin/announcements/");
 
-    if (isOrganizerOnlyRoute && !canManageStaff(role!)) {
+    if (isOrganizerOnlyRoute && !canManageStaff(role)) {
       return redirect(new URL("/admin", request.url));
     }
   }

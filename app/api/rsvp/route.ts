@@ -1,32 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
-import { NextRequest, NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
-/** Helper: verify session cookie and return the authenticated user */
-async function verifySession(request: NextRequest) {
-  const sessionCookie = request.cookies.get("sh_session");
-  if (!sessionCookie?.value) return null;
-
-  let cookieSession: { access_token?: string };
-  try {
-    cookieSession = JSON.parse(sessionCookie.value);
-  } catch {
-    return null;
-  }
-
-  if (!cookieSession.access_token) return null;
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${cookieSession.access_token}`,
-        },
-      },
-    },
-  );
-
+/** Helper: verify the Supabase session and return the authenticated user. */
+async function verifySession() {
+  const supabase = await createClient();
   const {
     data: { user },
     error,
@@ -36,13 +14,13 @@ async function verifySession(request: NextRequest) {
 }
 
 /** GET /api/rsvp - fetch the authenticated user's existing RSVP (if any) */
-export async function GET(request: NextRequest) {
-  const user = await verifySession(request);
+export async function GET() {
+  const user = await verifySession();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const adminClient = createClient(
+  const adminClient = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY!,
   );
@@ -64,7 +42,7 @@ export async function GET(request: NextRequest) {
 /** POST /api/rsvp - create or update the authenticated user's RSVP */
 export async function POST(request: NextRequest) {
   try {
-    const user = await verifySession(request);
+    const user = await verifySession();
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
@@ -77,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Both fields are required" }, { status: 400 });
     }
 
-    const adminClient = createClient(
+    const adminClient = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SECRET_KEY!,
     );
