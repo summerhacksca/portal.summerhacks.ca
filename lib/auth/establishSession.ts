@@ -2,10 +2,12 @@ import "server-only";
 import type { Session } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { canAccessPortal, getRoleFromAppMetadata } from "@/lib/auth/roles";
+import {
+  SH_SESSION_COOKIE,
+  serializeShSession,
+  shSessionCookieOptions,
+} from "@/lib/auth/session";
 import { getSiteUrl } from "@/lib/portal/siteUrl";
-
-const SESSION_COOKIE = "sh_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 /** Where a freshly signed-in user belongs, based on the role in their token. */
 export function destinationForSession(session: Session): string {
@@ -14,7 +16,7 @@ export function destinationForSession(session: Session): string {
 }
 
 /**
- * Writes the `sh_session` cookie that proxy.ts and /api/rsvp read, and returns
+ * Writes the `sh_session` cookie that proxy.ts keeps in sync, and returns
  * the path to send the user to.
  *
  * The Supabase auth cookies that server components read via `getUser()` are
@@ -26,20 +28,9 @@ export async function establishSession(session: Session): Promise<string> {
   const cookieStore = await cookies();
 
   cookieStore.set(
-    SESSION_COOKIE,
-    JSON.stringify({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      email: session.user?.email,
-      user_id: session.user?.id,
-    }),
-    {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: getSiteUrl().startsWith("https://"),
-      maxAge: SESSION_MAX_AGE,
-    },
+    SH_SESSION_COOKIE,
+    serializeShSession(session),
+    shSessionCookieOptions(getSiteUrl().startsWith("https://")),
   );
 
   return destinationForSession(session);

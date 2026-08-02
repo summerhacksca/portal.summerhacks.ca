@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { RESUME_BUCKET } from "@/lib/portal/resume";
 import { UNIVERSITY_YEARS } from "@/lib/portal/types";
+import { SH_SESSION_COOKIE } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,7 +42,9 @@ export async function startResumeUpload(): Promise<{ path: string; token: string
 
   const path = `${user.id}/resume-${Date.now()}.pdf`;
 
-  const { data, error } = await supabase.storage.from(RESUME_BUCKET).createSignedUploadUrl(path);
+  const { data, error } = await supabase.storage
+    .from(RESUME_BUCKET)
+    .createSignedUploadUrl(path);
 
   if (error || !data) {
     console.error("Failed to mint resume upload URL:", error);
@@ -149,7 +152,7 @@ export async function signOut() {
   }
 
   const cookieStore = await cookies();
-  cookieStore.delete("sh_session");
+  cookieStore.delete(SH_SESSION_COOKIE);
 
   redirect("/portal/login");
 }
