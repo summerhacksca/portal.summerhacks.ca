@@ -1,5 +1,6 @@
 "use client";
 
+import { FileText, Upload } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { startResumeUpload, updateProfile } from "@/app/portal/actions";
 import { MAX_RESUME_BYTES, RESUME_BUCKET, RESUME_CONTENT_TYPE } from "@/lib/portal/resume";
@@ -172,15 +173,60 @@ export function ProfileForm({
 
 			<div className="flex flex-col gap-2">
 				<span className="font-body text-[13px] text-sun-400">Resume</span>
-				<div className="flex flex-wrap items-center gap-3">
+
+				<label
+					htmlFor="resume-file"
+					className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-sm border-2 border-dashed px-4 py-6 text-center transition ${
+						selectedFileName || currentResumePath
+							? "border-sun-300 bg-sun-50"
+							: "border-black/15 bg-sun-50 hover:border-sun-300 hover:bg-white"
+					}`}
+				>
 					<input
 						ref={fileRef}
+						id="resume-file"
 						type="file"
 						accept="application/pdf"
 						onChange={handleResumeFileChange}
-						className="font-body text-[13px] text-base-800"
+						className="sr-only"
 					/>
-					{(selectedFileName || currentResumePath) && (
+					{selectedFileName ? (
+						<>
+							<FileText className="h-5 w-5 text-sun-400" strokeWidth={1.5} />
+							<span className="font-body text-[14px] text-base-800">{selectedFileName}</span>
+							<span className="font-body text-[12px] text-sun-400">
+								Click to choose a different file
+							</span>
+						</>
+					) : currentResumePath ? (
+						<>
+							<FileText className="h-5 w-5 text-sun-400" strokeWidth={1.5} />
+							<span className="font-body text-[14px] text-base-800">Resume on file</span>
+							<span className="font-body text-[12px] text-sun-400">Click to replace</span>
+						</>
+					) : (
+						<>
+							<Upload className="h-5 w-5 text-sun-400" strokeWidth={1.5} />
+							<span className="font-body text-[14px] text-base-800">
+								Click to upload your resume
+							</span>
+							<span className="font-body text-[12px] text-sun-400">PDF, up to 5MB</span>
+						</>
+					)}
+				</label>
+
+				{(currentResumeUrl || selectedFileName || currentResumePath) && (
+					<div className="flex flex-wrap items-center gap-4">
+						{currentResumeUrl && !selectedFileName && (
+							<a
+								href={currentResumeUrl}
+								target="_blank"
+								rel="noreferrer"
+								className="font-body text-[13px] text-text-brand-accent underline"
+							>
+								View current resume
+							</a>
+						)}
 						<button
 							type="button"
 							onClick={handleRemoveResume}
@@ -188,22 +234,9 @@ export function ProfileForm({
 						>
 							Remove
 						</button>
-					)}
-				</div>
-				{selectedFileName ? (
-					<p className="font-body text-[13px] text-sun-400">Selected: {selectedFileName}</p>
-				) : currentResumeUrl ? (
-					<a
-						href={currentResumeUrl}
-						target="_blank"
-						rel="noreferrer"
-						className="w-fit font-body text-[13px] text-text-brand-accent underline"
-					>
-						View current resume
-					</a>
-				) : currentResumePath ? (
-					<p className="font-body text-[13px] text-sun-400">Resume on file.</p>
-				) : null}
+					</div>
+				)}
+
 				<label className="flex flex-col gap-2">
 					<span className="font-body text-[13px] text-sun-400">…or paste a link</span>
 					<input
