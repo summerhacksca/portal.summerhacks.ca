@@ -16,6 +16,12 @@ function formatTime(iso: string) {
 	});
 }
 
+/** "9:30 AM" for a point event, "9:30 – 11:00 AM" once ends_at is set (migrations/0013). */
+function formatTimeRange(startsAt: string, endsAt: string | null) {
+	if (!endsAt) return formatTime(startsAt);
+	return `${formatTime(startsAt)} – ${formatTime(endsAt)}`;
+}
+
 function dayKey(iso: string) {
 	// Stable YYYY-MM-DD grouping key in event-local time.
 	return new Date(iso).toLocaleDateString("en-CA", { timeZone: TIME_ZONE });
@@ -79,7 +85,7 @@ export function ScheduleView({ events }: { events: ScheduleEvent[] }) {
 				</p>
 			) : (
 				<div className="overflow-hidden rounded-sm bg-surface-card shadow-card">
-					<div className="grid grid-cols-[110px_1fr_140px_200px] bg-sun-50 px-6 py-3.5">
+					<div className="grid grid-cols-[150px_1fr_140px_200px] bg-sun-50 px-6 py-3.5">
 						{["Time", "Event", "Type", "Track / room"].map((label) => (
 							<span
 								key={label}
@@ -92,10 +98,10 @@ export function ScheduleView({ events }: { events: ScheduleEvent[] }) {
 					{active.events.map((row) => (
 						<div
 							key={row.id}
-							className="grid grid-cols-[110px_1fr_140px_200px] items-center border-t border-black/[0.06] px-6 py-4"
+							className="grid grid-cols-[150px_1fr_140px_200px] items-center border-t border-black/[0.06] px-6 py-4"
 						>
 							<span className="font-mono text-[12px] text-base-800">
-								{formatTime(row.starts_at)}
+								{formatTimeRange(row.starts_at, row.ends_at)}
 							</span>
 							<span className="font-display text-[15px] font-medium tracking-tight text-base-800">
 								{row.title}

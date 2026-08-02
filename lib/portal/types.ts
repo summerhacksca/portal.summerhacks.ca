@@ -46,6 +46,8 @@ export type ScheduleEventType = (typeof SCHEDULE_EVENT_TYPES)[number];
 export type ScheduleEvent = {
   id: string;
   starts_at: string;
+  /** Null for point-in-time rows (milestones, deadlines) - see migrations/0013. */
+  ends_at: string | null;
   title: string;
   type: ScheduleEventType;
   location: string;

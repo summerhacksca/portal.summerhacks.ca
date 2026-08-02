@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Check, Copy } from "lucide-react";
-import { checkInUser, uncheckInUser, type CheckinResult } from "@/app/admin/actions";
+import {
+	autoCheckInUser,
+	checkInUser,
+	uncheckInUser,
+	type CheckinResult,
+} from "@/app/admin/actions";
 
 const TIME_ZONE = "America/Toronto";
 /** Same key the reference implementation uses, so a volunteer's pick survives reloads. */
@@ -49,6 +54,8 @@ export function CheckinPanel({
 	profile,
 	events,
 	defaultEventId,
+	autoCheckInEventId,
+	noActiveEvent,
 	checkedInEventIds,
 }: {
 	nfcId: string;
@@ -62,6 +69,10 @@ export function CheckinPanel({
 	};
 	events: CheckinEvent[];
 	defaultEventId: string;
+	/** Set only when exactly one check-in event is active - triggers the auto-fire effect below. */
+	autoCheckInEventId: string | null;
+	/** Nothing is active right now; `events` has fallen back to the full list. */
+	noActiveEvent: boolean;
 	checkedInEventIds: string[];
 }) {
 	const [pickedEventId, setPickedEventId] = useState<string | null>(null);
@@ -70,7 +81,11 @@ export function CheckinPanel({
 	const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 	const [result, setResult] = useState<CheckinResult | null>(null);
 	const [copied, setCopied] = useState(false);
+	const [isAutoChecking, setIsAutoChecking] = useState(Boolean(autoCheckInEventId));
 	const [isPending, startTransition] = useTransition();
+	// Guards the auto check-in effect so React StrictMode's dev double-mount
+	// (or a re-render with the same nfcId) can't fire the scan twice.
+	const autoFired = useRef(false);
 
 	const cachedEventId = useSyncExternalStore(
 		subscribeToStorage,
@@ -78,7 +93,11 @@ export function CheckinPanel({
 		readCachedEventIdOnServer,
 	);
 
+	// A confirmed active event overrides everything, including a stale sticky
+	// pick from a previous shift - that staleness is exactly the bug this
+	// auto-check-in feature exists to route around.
 	const selectedEventId =
+		autoCheckInEventId ??
 		pickedEventId ??
 		(cachedEventId && events.some((event) => event.id === cachedEventId)
 			? cachedEventId
@@ -94,6 +113,32 @@ export function CheckinPanel({
 		overrides[eventId] ?? checkedInEventIds.includes(eventId);
 
 	const isSelectedCheckedIn = isCheckedIn(selectedEventId);
+
+	// Fires the scan straight through when exactly one event qualifies, so a
+	// volunteer doesn't have to tap anything for the common case. Skips
+	// re-firing if the hacker is already checked into that event (e.g. a
+	// re-scan at the same table).
+	useEffect(() => {
+		if (!autoCheckInEventId || autoFired.current) return;
+		if (checkedInEventIds.includes(autoCheckInEventId)) {
+			setIsAutoChecking(false);
+			return;
+		}
+
+		autoFired.current = true;
+		startTransition(async () => {
+			const actionResult = await autoCheckInUser(nfcId);
+			setResult(actionResult);
+			setIsAutoChecking(false);
+
+			if (actionResult.success && actionResult.eventId) {
+				setOverrides((previous) => ({ ...previous, [actionResult.eventId as string]: true }));
+			}
+		});
+		// nfcId/autoCheckInEventId only - checkedInEventIds is read once at mount
+		// time via autoFired, not tracked, so a later revalidation can't re-fire this.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [nfcId, autoCheckInEventId]);
 
 	const handleSelect = (eventId: string) => {
 		setPickedEventId(eventId);
@@ -154,10 +199,27 @@ export function CheckinPanel({
 					Event
 				</label>
 
+				{noActiveEvent && (
+					<p className="font-body text-[13px] text-sun-400">
+						No event is running right now - pick one manually.
+					</p>
+				)}
+
 				{events.length === 0 ? (
 					<p className="font-body text-[14px] text-sun-400">
 						No events are set up for check-in yet.
 					</p>
+				) : autoCheckInEventId ? (
+					// Exactly one event is active - a one-option dropdown would be
+					// noise, so it's locked text instead. Check-in / Undo below still
+					// work normally as the manual fallback.
+					<div
+						id="checkin-event"
+						className="flex h-12 w-full items-center rounded-sm border border-black/10 bg-sun-50 px-4 font-body text-[14px] text-base-800"
+					>
+						{events[0].title} · {formatEventTime(events[0].startsAt)}
+						{isCheckedIn(events[0].id) ? " ✓" : ""}
+					</div>
 				) : (
 					<select
 						id="checkin-event"
@@ -183,7 +245,9 @@ export function CheckinPanel({
 						className="inline-flex h-12 flex-1 items-center justify-center rounded-pill bg-orange px-6 font-display text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 					>
 						{isPending
-							? "Working…"
+							? isAutoChecking
+								? "Checking in…"
+								: "Working…"
 							: isSelectedCheckedIn
 								? "Already checked in"
 								: "Check in"}

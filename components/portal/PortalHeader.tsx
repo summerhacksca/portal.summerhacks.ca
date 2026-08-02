@@ -8,12 +8,13 @@ import { NavPillGroup, navPillClass } from "./ui/NavPill";
 const TABS = [
   { href: "/portal", label: "Home" },
   { href: "/portal/schedule", label: "Schedule" },
-  { href: "/portal/map", label: "Map" },
   { href: "/portal/trek", label: "Space Trek" },
+  { href: "/portal/map", label: "Map" },
   { href: "/portal/profile", label: "Profile" },
   { href: "/portal/help", label: "FAQ" },
 ];
 
+// TODO: Update these URLs
 const AGORIZE_URL = "https://agorize.com";
 const DISCORD_URL = "https://discord.gg";
 

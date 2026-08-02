@@ -31,6 +31,10 @@ DELETE FROM public.tracks WHERE slug IN (
 	'education'
 );
 
+-- Superseded for Aug 8-9, 2026: 0013_schedule_2026_seed.sql replaced these
+-- rows and does its own scoped delete (by date range, not by exact tuple)
+-- before every re-run. The list below only still matches a database that
+-- was seeded by 0002 and never ran 0013.
 DELETE FROM public.schedule_events WHERE (starts_at, title) IN (
 	('2026-08-09T07:45:00-04:00', 'Registration / check-in'),
 	('2026-08-08T10:00:00-04:00', 'Opening ceremony (livestream)'),

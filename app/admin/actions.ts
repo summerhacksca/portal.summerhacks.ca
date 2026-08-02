@@ -16,12 +16,19 @@ import {
 	discordColorForCss,
 	isAnnouncementAccentKey,
 } from "@/lib/portal/announcementAccents";
+import { activeCheckinEvents } from "@/lib/portal/checkinWindow";
+import { getCheckinEvents } from "@/lib/portal/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type CheckinResult = {
 	success: boolean;
 	message: string;
+};
+
+export type AutoCheckinResult = CheckinResult & {
+	eventId: string | null;
+	eventTitle: string | null;
 };
 
 /**
@@ -69,6 +76,32 @@ async function requireOrganizer() {
 	return { supabase, user, role };
 }
 
+/**
+ * Shared upsert for both the manual and auto check-in paths. The unique
+ * (event_id, user_id) index makes this idempotent, so a double-scan
+ * re-stamps the row instead of erroring.
+ */
+async function upsertCheckin(
+	supabase: Awaited<ReturnType<typeof createClient>>,
+	eventId: string,
+	userId: string,
+	staffUserId: string,
+) {
+	const now = new Date().toISOString();
+
+	return supabase.from("event_checkins").upsert(
+		{
+			event_id: eventId,
+			user_id: userId,
+			checked_in: true,
+			checked_in_at: now,
+			checked_in_by: staffUserId,
+			updated_at: now,
+		},
+		{ onConflict: "event_id,user_id" },
+	);
+}
+
 /** Check a hacker into an event by their scanned tag ID. */
 export async function checkInUser(nfcId: string, eventId: string): Promise<CheckinResult> {
 	const { supabase, user } = await requireStaff();
@@ -83,21 +116,7 @@ export async function checkInUser(nfcId: string, eventId: string): Promise<Check
 		return { success: false, message: "No hacker found for this tag." };
 	}
 
-	const now = new Date().toISOString();
-
-	// The unique (event_id, user_id) index makes this idempotent, so a
-	// double-scan re-stamps the row instead of erroring.
-	const { error } = await supabase.from("event_checkins").upsert(
-		{
-			event_id: eventId,
-			user_id: profile.user_id,
-			checked_in: true,
-			checked_in_at: now,
-			checked_in_by: user.id,
-			updated_at: now,
-		},
-		{ onConflict: "event_id,user_id" },
-	);
+	const { error } = await upsertCheckin(supabase, eventId, profile.user_id, user.id);
 
 	if (error) {
 		console.error("Failed to check in user:", error);
@@ -109,6 +128,59 @@ export async function checkInUser(nfcId: string, eventId: string): Promise<Check
 	revalidatePath("/portal", "layout");
 
 	return { success: true, message: "Checked in." };
+}
+
+/**
+ * Auto-resolve a scan to an event without the volunteer picking one: only
+ * fires when exactly one check-in event is running (or starting within
+ * CHECKIN_LEAD_MINUTES) at the moment of the call. The active set is
+ * recomputed here from the server clock rather than trusted from the
+ * client - a stale page can't auto-check someone into an event that has
+ * since ended or hasn't started yet.
+ */
+export async function autoCheckInUser(nfcId: string): Promise<AutoCheckinResult> {
+	const { supabase, user } = await requireStaff();
+
+	const events = await getCheckinEvents();
+	const active = activeCheckinEvents(events, Date.now());
+
+	if (active.length !== 1) {
+		return { success: false, message: "No single event is active.", eventId: null, eventTitle: null };
+	}
+
+	const [event] = active;
+
+	const { data: profile } = await supabase
+		.from("profiles")
+		.select("user_id")
+		.eq("nfc_id", nfcId)
+		.maybeSingle();
+
+	if (!profile) {
+		return {
+			success: false,
+			message: "No hacker found for this tag.",
+			eventId: null,
+			eventTitle: null,
+		};
+	}
+
+	const { error } = await upsertCheckin(supabase, event.id, profile.user_id, user.id);
+
+	if (error) {
+		console.error("Failed to auto check in user:", error);
+		return { success: false, message: error.message, eventId: event.id, eventTitle: event.title };
+	}
+
+	revalidatePath("/admin", "layout");
+	revalidatePath("/portal", "layout");
+
+	return {
+		success: true,
+		message: `Checked in to ${event.title}.`,
+		eventId: event.id,
+		eventTitle: event.title,
+	};
 }
 
 /** Undo a check-in. Keeps the row so the audit trail survives. */

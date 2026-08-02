@@ -1,20 +1,9 @@
 import Link from "next/link";
 import { CheckinPanel } from "@/components/admin/CheckinPanel";
 import { SectionHeader } from "@/components/portal/ui/SectionHeader";
+import { currentActiveCheckinEvents } from "@/lib/portal/checkinWindow";
 import { getCheckinEvents, getCheckinsForUser, getProfileByNfcId } from "@/lib/portal/queries";
 import { checkInUrlFor } from "@/lib/portal/siteUrl";
-
-/** The event nearest to now - what a volunteer almost always wants preselected. */
-function nearestEventId(events: { id: string; starts_at: string }[]): string {
-  if (events.length === 0) return "";
-
-  const now = Date.now();
-  return events.reduce((closest, event) => {
-    const distance = Math.abs(new Date(event.starts_at).getTime() - now);
-    const closestDistance = Math.abs(new Date(closest.starts_at).getTime() - now);
-    return distance < closestDistance ? event : closest;
-  }).id;
-}
 
 export default async function AdminCheckinPage({
   params,
@@ -54,6 +43,12 @@ export default async function AdminCheckinPage({
   // client-side polling needed before a volunteer can act.
   const checkins = await getCheckinsForUser(profile.user_id);
 
+  // Narrow the dropdown to whatever's actually running (or about to start).
+  // Falls back to the full list when nothing qualifies, same as before this
+  // existed - a volunteer handling a late/early arrival can still pick.
+  const active = currentActiveCheckinEvents(events);
+  const candidates = active.length > 0 ? active : events;
+
   return (
     <main className="mx-auto flex w-full max-w-[560px] flex-col gap-5 px-6 py-8 pb-20 sm:px-9">
       <SectionHeader title="Check-in" />
@@ -67,12 +62,14 @@ export default async function AdminCheckinPage({
           school: profile.school,
           tracks: profile.tracks,
         }}
-        events={events.map((event) => ({
+        events={candidates.map((event) => ({
           id: event.id,
           title: event.title,
           startsAt: event.starts_at,
         }))}
-        defaultEventId={nearestEventId(events)}
+        defaultEventId={candidates[0]?.id ?? ""}
+        autoCheckInEventId={active.length === 1 ? active[0].id : null}
+        noActiveEvent={active.length === 0}
         checkedInEventIds={checkins.filter((c) => c.checked_in).map((c) => c.event_id)}
       />
     </main>
