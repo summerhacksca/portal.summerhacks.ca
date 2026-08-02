@@ -1,41 +1,14 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
-import { ArrowUp } from "lucide-react";
+import SignInForm from "@/components/auth/SignInForm";
 
-export default function PortalLoginPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+type SearchParams = Promise<{ error?: string }>;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setMessage("");
-
-    try {
-      const res = await fetch("/api/auth/send-magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error ?? "Failed to send magic link");
-      }
-
-      setMessage("Magic link sent! Check your email.");
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default async function PortalLoginPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { error } = await searchParams;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-surface-page p-5">
@@ -46,44 +19,11 @@ export default function PortalLoginPage() {
             Sign in to the Hacker Portal
           </h1>
           <p className="font-body text-[14px] leading-snug text-sun-400">
-            Enter the email you applied with, and we&apos;ll send you a magic link to sign in.
+            Enter the email you applied with, and we&apos;ll send you a 6-digit code to sign in.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (error) setError("");
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter" || e.nativeEvent.isComposing || loading) {
-                return;
-              }
-              e.preventDefault();
-              e.currentTarget.form?.requestSubmit();
-            }}
-            placeholder="your@email.com"
-            required
-            className="h-12 w-full rounded-sm border border-black/10 bg-sun-50 px-4 font-body text-[14px] text-base-800 outline-none transition focus:border-sun-300 focus:bg-white"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-pill bg-orange px-6 font-display text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto sm:self-end"
-          >
-            {loading ? "Sending…" : "Send magic link"}
-            <ArrowUp size={18} className="rotate-90" />
-          </button>
-
-          {error && <p className="font-body text-[13px] text-red-500">{error}</p>}
-          {message && <p className="font-body text-[13px] text-green-600">{message}</p>}
-        </form>
+        <SignInForm variant="portal" errorCode={error} />
       </div>
     </main>
   );
