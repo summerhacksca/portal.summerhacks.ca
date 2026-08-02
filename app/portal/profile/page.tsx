@@ -9,6 +9,7 @@ import {
   getCheckinEvents,
   getMyCheckins,
   getProfile,
+  getResumeSignedUrl,
   getTracks,
   isCheckedInAtRegistration,
 } from "@/lib/portal/queries";
@@ -31,7 +32,13 @@ export default async function ProfilePage() {
     );
   }
 
-  const checkinQr = await getCheckinQr(profile.nfc_id);
+  const [checkinQr, resumeSignedUrl] = await Promise.all([
+    getCheckinQr(profile.nfc_id),
+    getResumeSignedUrl(profile.resume_path),
+  ]);
+
+  const programAndYear = [profile.program, profile.university_year].filter(Boolean).join(" · ");
+  const resumeLink = resumeSignedUrl || profile.resume_url || null;
 
   return (
     <main className="mx-auto flex w-full max-w-[1160px] flex-col gap-7 px-6 py-8 pb-20 sm:px-9">
@@ -65,6 +72,18 @@ export default async function ProfilePage() {
             <span className="font-body text-[13px] text-sun-400">
               {profile.school || "No school listed"}
             </span>
+            <span className="font-body text-[13px] text-sun-400">
+              {programAndYear || "Program not listed"}
+            </span>
+            <span className="font-body text-[13px] text-sun-400">
+              {resumeLink ? (
+                <a href={resumeLink} target="_blank" rel="noreferrer" className="underline">
+                  View resume
+                </a>
+              ) : (
+                "No resume on file"
+              )}
+            </span>
           </div>
         </div>
 
@@ -91,6 +110,11 @@ export default async function ProfilePage() {
           school={profile.school}
           tracks={profile.tracks}
           allTracks={allTracks}
+          universityYear={profile.university_year}
+          program={profile.program}
+          resumeUrl={profile.resume_url}
+          resumePath={profile.resume_path}
+          resumeSignedUrl={resumeSignedUrl}
         />
       </div>
 

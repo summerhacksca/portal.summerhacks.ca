@@ -37,13 +37,24 @@ function formatEventTime(iso: string) {
 	});
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({ label, value, href }: { label: string; value: string; href?: string }) {
 	return (
 		<div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-black/[0.06] px-5 py-3 first:border-t-0">
 			<span className="font-display text-[12px] font-semibold tracking-tight text-sun-400">
 				{label}
 			</span>
-			<span className="font-body text-[14px] text-base-800">{value}</span>
+			{href ? (
+				<a
+					href={href}
+					target="_blank"
+					rel="noreferrer"
+					className="font-body text-[14px] text-text-brand-accent underline"
+				>
+					{value}
+				</a>
+			) : (
+				<span className="font-body text-[14px] text-base-800">{value}</span>
+			)}
 		</div>
 	);
 }
@@ -66,6 +77,9 @@ export function CheckinPanel({
 		teamName: string;
 		school: string;
 		tracks: string[];
+		program: string;
+		universityYear: string;
+		resumeUrl: string;
 	};
 	events: CheckinEvent[];
 	defaultEventId: string;
@@ -183,9 +197,16 @@ export function CheckinPanel({
 				<div className="overflow-hidden rounded-sm bg-sun-50">
 					<Field label="Team" value={profile.teamName || "No team yet"} />
 					<Field label="School" value={profile.school || "Not listed"} />
+					<Field label="Program" value={profile.program || "Not listed"} />
+					<Field label="Year" value={profile.universityYear || "Not listed"} />
 					<Field
 						label="Tracks"
 						value={profile.tracks.length ? profile.tracks.join(", ") : "Not selected"}
+					/>
+					<Field
+						label="Resume"
+						value={profile.resumeUrl ? "View" : "Not on file"}
+						href={profile.resumeUrl || undefined}
 					/>
 				</div>
 			</div>

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { type UserRole, isUserRole } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
+import { RESUME_BUCKET } from "./resume";
 import { TREK_BUCKET } from "./trek";
 import type {
   Announcement,
@@ -379,4 +380,26 @@ export async function getTrekPhotoUrls(paths: string[]): Promise<Record<string, 
     if (item.path && item.signedUrl) urls[item.path] = item.signedUrl;
   }
   return urls;
+}
+
+/**
+ * A short-lived signed URL for a resume in the private `resumes` bucket.
+ * Minted through the user-scoped client, so the storage policies decide what
+ * comes back: a hacker gets their own folder, staff get anyone's (needed for
+ * the admin check-in panel), and an unreadable path simply yields null.
+ */
+export async function getResumeSignedUrl(path: string): Promise<string | null> {
+  if (!path) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.storage
+    .from(RESUME_BUCKET)
+    .createSignedUrl(path, 60 * 60);
+
+  if (error || !data) {
+    console.error("Failed to sign resume URL:", error);
+    return null;
+  }
+
+  return data.signedUrl;
 }

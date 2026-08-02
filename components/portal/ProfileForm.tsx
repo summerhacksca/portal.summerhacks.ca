@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateProfile } from "@/app/portal/actions";
-import type { Track } from "@/lib/portal/types";
+import { useRef, useState, useTransition } from "react";
+import { startResumeUpload, updateProfile } from "@/app/portal/actions";
+import { MAX_RESUME_BYTES, RESUME_BUCKET, RESUME_CONTENT_TYPE } from "@/lib/portal/resume";
+import { UNIVERSITY_YEARS, type Track } from "@/lib/portal/types";
+import { createClient } from "@/lib/supabase/client";
 
 const inputClass =
 	"h-11 w-full rounded-sm border border-black/10 bg-sun-50 px-4 text-[14px] text-base-800 outline-none transition focus:border-sun-300 focus:bg-white";
@@ -13,22 +15,47 @@ export function ProfileForm({
 	school,
 	tracks,
 	allTracks,
+	universityYear,
+	program,
+	resumeUrl,
+	resumePath,
+	resumeSignedUrl,
 }: {
 	fullName: string;
 	teamName: string;
 	school: string;
 	tracks: string[];
 	allTracks: Track[];
+	universityYear: string;
+	program: string;
+	resumeUrl: string;
+	resumePath: string;
+	resumeSignedUrl: string | null;
 }) {
 	const [isPending, startTransition] = useTransition();
 	const [selectedTracks, setSelectedTracks] = useState<string[]>(tracks);
+	const [currentResumePath, setCurrentResumePath] = useState(resumePath);
+	const [currentResumeUrl, setCurrentResumeUrl] = useState(resumeSignedUrl);
+	const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
 	const [message, setMessage] = useState("");
 	const [error, setError] = useState("");
+	const fileRef = useRef<HTMLInputElement>(null);
 
 	function toggleTrack(name: string) {
 		setSelectedTracks((prev) =>
 			prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name],
 		);
+	}
+
+	function handleResumeFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		setSelectedFileName(e.target.files?.[0]?.name ?? null);
+	}
+
+	function handleRemoveResume() {
+		setCurrentResumePath("");
+		setCurrentResumeUrl(null);
+		setSelectedFileName(null);
+		if (fileRef.current) fileRef.current.value = "";
 	}
 
 	function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -40,9 +67,48 @@ export function ProfileForm({
 		formData.delete("tracks");
 		selectedTracks.forEach((t) => formData.append("tracks", t));
 
+		const file = fileRef.current?.files?.[0];
+
+		if (file && file.type !== RESUME_CONTENT_TYPE) {
+			setError("Resumes must be a PDF.");
+			return;
+		}
+
+		if (file && file.size > MAX_RESUME_BYTES) {
+			setError("That resume is too large. Try again with a smaller file.");
+			return;
+		}
+
 		startTransition(async () => {
 			try {
+				let resumePathToSave = currentResumePath;
+
+				if (file) {
+					const ticket = await startResumeUpload();
+					const supabase = createClient();
+					const { error: uploadError } = await supabase.storage
+						.from(RESUME_BUCKET)
+						.uploadToSignedUrl(ticket.path, ticket.token, file, {
+							contentType: RESUME_CONTENT_TYPE,
+						});
+
+					if (uploadError) {
+						console.error("Resume upload failed:", uploadError);
+						setError("The upload didn't go through. Check your signal and try again.");
+						return;
+					}
+
+					resumePathToSave = ticket.path;
+				}
+
+				formData.set("resume_path", resumePathToSave);
+
 				await updateProfile(formData);
+				setCurrentResumePath(resumePathToSave);
+				// Clear the raw <input> so a second "Save" without touching the
+				// resume field can't silently re-upload the same file; the name
+				// stays in selectedFileName so the confirmation text is unaffected.
+				if (fileRef.current) fileRef.current.value = "";
 				setMessage("Profile updated.");
 			} catch (err) {
 				setError((err as Error).message);
@@ -81,6 +147,74 @@ export function ProfileForm({
 					className={inputClass}
 				/>
 			</label>
+
+			<label className="flex flex-col gap-2">
+				<span className="font-body text-[13px] text-sun-400">Program</span>
+				<input
+					name="program"
+					defaultValue={program}
+					placeholder="Computer Engineering"
+					className={inputClass}
+				/>
+			</label>
+
+			<label className="flex flex-col gap-2">
+				<span className="font-body text-[13px] text-sun-400">Year</span>
+				<select name="university_year" defaultValue={universityYear} className={inputClass}>
+					<option value="">Select…</option>
+					{UNIVERSITY_YEARS.map((year) => (
+						<option key={year} value={year}>
+							{year}
+						</option>
+					))}
+				</select>
+			</label>
+
+			<div className="flex flex-col gap-2">
+				<span className="font-body text-[13px] text-sun-400">Resume</span>
+				<div className="flex flex-wrap items-center gap-3">
+					<input
+						ref={fileRef}
+						type="file"
+						accept="application/pdf"
+						onChange={handleResumeFileChange}
+						className="font-body text-[13px] text-base-800"
+					/>
+					{(selectedFileName || currentResumePath) && (
+						<button
+							type="button"
+							onClick={handleRemoveResume}
+							className="font-body text-[13px] text-sun-400 underline"
+						>
+							Remove
+						</button>
+					)}
+				</div>
+				{selectedFileName ? (
+					<p className="font-body text-[13px] text-sun-400">Selected: {selectedFileName}</p>
+				) : currentResumeUrl ? (
+					<a
+						href={currentResumeUrl}
+						target="_blank"
+						rel="noreferrer"
+						className="w-fit font-body text-[13px] text-text-brand-accent underline"
+					>
+						View current resume
+					</a>
+				) : currentResumePath ? (
+					<p className="font-body text-[13px] text-sun-400">Resume on file.</p>
+				) : null}
+				<label className="flex flex-col gap-2">
+					<span className="font-body text-[13px] text-sun-400">…or paste a link</span>
+					<input
+						name="resume_url"
+						type="url"
+						defaultValue={resumeUrl}
+						placeholder="https://drive.google.com/..."
+						className={inputClass}
+					/>
+				</label>
+			</div>
 
 			<div className="flex flex-col gap-2">
 				<span className="font-body text-[13px] text-sun-400">

@@ -2,7 +2,12 @@ import Link from "next/link";
 import { CheckinPanel } from "@/components/admin/CheckinPanel";
 import { SectionHeader } from "@/components/portal/ui/SectionHeader";
 import { currentActiveCheckinEvents } from "@/lib/portal/checkinWindow";
-import { getCheckinEvents, getCheckinsForUser, getProfileByNfcId } from "@/lib/portal/queries";
+import {
+  getCheckinEvents,
+  getCheckinsForUser,
+  getProfileByNfcId,
+  getResumeSignedUrl,
+} from "@/lib/portal/queries";
 import { checkInUrlFor } from "@/lib/portal/siteUrl";
 
 export default async function AdminCheckinPage({
@@ -43,6 +48,12 @@ export default async function AdminCheckinPage({
   // client-side polling needed before a volunteer can act.
   const checkins = await getCheckinsForUser(profile.user_id);
 
+  // Staff can sign any object in the resumes bucket ("Staff can manage the
+  // resumes bucket" in migrations/0014), so this works regardless of whose
+  // tag was scanned.
+  const resumeSignedUrl = await getResumeSignedUrl(profile.resume_path);
+  const resumeUrl = resumeSignedUrl || profile.resume_url || "";
+
   // Narrow the dropdown to whatever's actually running (or about to start).
   // Falls back to the full list when nothing qualifies, same as before this
   // existed - a volunteer handling a late/early arrival can still pick.
@@ -61,6 +72,9 @@ export default async function AdminCheckinPage({
           teamName: profile.team_name,
           school: profile.school,
           tracks: profile.tracks,
+          program: profile.program,
+          universityYear: profile.university_year,
+          resumeUrl,
         }}
         events={candidates.map((event) => ({
           id: event.id,

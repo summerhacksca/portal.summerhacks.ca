@@ -9,9 +9,27 @@ export type Profile = {
   tracks: string[];
   avatar_url: string | null;
   nfc_id: string;
+  university_year: UniversityYear | "";
+  program: string;
+  /** External link the hacker pasted. Empty when they uploaded a file instead. */
+  resume_url: string;
+  /** Object key in the private `resumes` bucket. Empty when they pasted a link instead. */
+  resume_path: string;
   created_at: string;
   updated_at: string;
 };
+
+/** Restricted to university students - see migrations/0014_profile_details.sql. */
+export const UNIVERSITY_YEARS = [
+  "1st year",
+  "2nd year",
+  "3rd year",
+  "4th year",
+  "5th year+",
+  "Graduate student",
+] as const;
+
+export type UniversityYear = (typeof UNIVERSITY_YEARS)[number];
 
 /** One row on /admin/staff - a profile merged with its current role. */
 export type StaffMember = {
