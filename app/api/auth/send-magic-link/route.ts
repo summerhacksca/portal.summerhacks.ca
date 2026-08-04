@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { getMagicLinkEligibility } from "@/lib/auth/magicLinkEligibility";
 import { getSiteUrl } from "@/lib/portal/siteUrl";
+import { createClient as createSsrClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,39 +25,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: eligibility.error }, { status: eligibility.status });
     }
 
-    // A plain anon client, deliberately NOT the @supabase/ssr one: that client
-    // starts a PKCE flow and pins a code-verifier cookie to whichever browser
-    // submitted this form, which breaks every sign-in finished somewhere else
-    // (email opened on a phone, or in a mail app's in-app browser). Verification
-    // now goes through the emailed 6-digit code or token_hash, neither of which
-    // needs anything stored on this device.
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    );
+    // Use @supabase/ssr client - PKCE flow stores the verifier in a cookie
+    // so the auth/confirm route can exchange the code for a session later.
+    const supabase = await createSsrClient();
+    const emailRedirectTo = `${getSiteUrl()}/auth/confirm`;
 
     const { error } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
-      options: { emailRedirectTo: `${getSiteUrl()}/auth/confirm` },
+      options: { emailRedirectTo },
     });
 
     if (error) {
-      // GoTrue throttles repeat sends per address (~60s). Say so rather than
-      // showing a generic failure that reads like the address is wrong.
-      if (error.status === 429) {
-        return NextResponse.json(
-          { error: "Please wait a moment before requesting another code." },
-          { status: 429 },
-        );
-      }
-
-      console.error("Failed to send sign-in code:", error);
-      return NextResponse.json({ error: "Failed to send sign-in code" }, { status: 500 });
+      console.error("Failed to send magic link:", error);
+      return NextResponse.json({ error: "Failed to send magic link" }, { status: 500 });
     }
 
-    return NextResponse.json({ email: normalizedEmail }, { status: 200 });
+    return NextResponse.json(
+      { message: "Magic link sent! Check your email." },
+      { status: 200 },
+    );
   } catch (error) {
-    console.error("Send sign-in code error:", error);
+    console.error("Send magic link error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
