@@ -15,9 +15,9 @@ export const metadata = {
  *
  * Volunteers reach this page - proxy.ts only gates /admin/trek, /admin/staff
  * and /admin/announcements behind canManageStaff, and this route is
- * deliberately not one of them. Organizer-only sections are filtered out per
- * section below instead, which is also what keeps environment variable names
- * off a volunteer's screen.
+ * deliberately not one of them. Sections describing those organizer-only
+ * pages are filtered out per section below, so a volunteer gets a guide to
+ * the job they actually do rather than one full of doors they cannot open.
  *
  * No client component: the contents list is plain anchors and the
  * troubleshooting entries are <details>, so all of it works server-rendered.
@@ -162,12 +162,14 @@ function Block({ block }: { block: DocBlock }) {
 function Section({ section, index }: { section: DocSection; index: number }) {
   return (
     <section id={section.id} className="flex scroll-mt-28 flex-col gap-5">
+      {/* The badge is only ever seen by organizers - volunteers never receive
+          these sections - so it reads as "your volunteers can't see this". */}
       <SectionHeader
         number={String(index + 1)}
         title={section.title}
         trailing={
           section.organizerOnly ? (
-            <span className="font-mono text-[11px] text-sun-400">organizers only</span>
+            <span className="font-mono text-[11px] text-sun-400">not shown to volunteers</span>
           ) : undefined
         }
       />
@@ -185,9 +187,9 @@ export default async function AdminDocsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const role = user ? getRoleFromAppMetadata(user.app_metadata) : "user";
+  const viewerRole = user ? getRoleFromAppMetadata(user.app_metadata) : "user";
   const sections = DOC_SECTIONS.filter(
-    (section) => !section.organizerOnly || canManageStaff(role),
+    (section) => !section.organizerOnly || canManageStaff(viewerRole),
   );
 
   return (

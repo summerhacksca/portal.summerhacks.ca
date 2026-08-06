@@ -6,9 +6,10 @@
  * thin renderer, and the table of contents is derived from DOC_SECTIONS rather
  * than hand-maintained beside it.
  *
- * Sections marked `organizerOnly` are filtered out for volunteers by the page.
- * That filter is the reason no secret values appear below - only environment
- * variable names and what they are for.
+ * Volunteers reach this page too. Sections marked `organizerOnly` are filtered
+ * out for them, so they get the desk job - signing in, check-in, tags, and the
+ * hacker problems they will actually field - without the pages they cannot
+ * open. Keep that flag on anything describing organizer-only tooling.
  */
 
 export type FaqItem = {
@@ -35,6 +36,7 @@ export type DocSection = {
   title: string;
   /** One line under the title, in the body and beside nothing in the TOC. */
   summary: string;
+  /** Hidden from volunteers - anything about pages they cannot open. */
   organizerOnly?: boolean;
   blocks: DocBlock[];
 };
@@ -47,11 +49,11 @@ export const DOC_SECTIONS: DocSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "This guide covers the staff side of the portal. It is only visible to volunteers, organizers and superadmins - hackers never see it.",
+        text: "This guide covers the staff side of the portal. Hackers never see it.",
       },
       {
         kind: "prose",
-        text: "Working the desk? You need Signing in, Checking hackers in, and NFC tags. Everything after that is organizer work.",
+        text: "You are shown the parts that apply to your role. Volunteers get the desk job - signing in, checking hackers in, tags, and the problems hackers actually report. Organizers get those plus announcements, the trek, staff management and what runs behind it all.",
       },
       { kind: "heading", text: "The whole desk job, in three steps" },
       {
@@ -82,7 +84,10 @@ export const DOC_SECTIONS: DocSection[] = [
         kind: "table",
         head: ["Role", "Can reach"],
         rows: [
-          ["user", "Nothing yet. Signed in, but sees “Access not available”."],
+          [
+            "user",
+            "Nothing. They are rejected applicants and other non-hackers and will see “Access not available”.",
+          ],
           ["hacker", "The portal: schedule, map, trek, profile, and their own check-in QR."],
           ["volunteer", "The portal, plus staff check-in and NFC tags."],
           [
@@ -326,7 +331,7 @@ export const DOC_SECTIONS: DocSection[] = [
   {
     id: "behind-the-scenes",
     title: "Behind the scenes",
-    summary: "The promote script, sign-in emails, environment, and event reminders.",
+    summary: "The promote script, sign-in emails, and event reminders.",
     organizerOnly: true,
     blocks: [
       { kind: "heading", text: "Promoting accepted hackers" },
@@ -363,29 +368,6 @@ export const DOC_SECTIONS: DocSection[] = [
         kind: "note",
         text: "When sign-in misbehaves for everyone at once, check those templates and the Site URL setting before suspecting the code.",
       },
-      { kind: "heading", text: "Environment" },
-      {
-        kind: "table",
-        head: ["Name", "What it does"],
-        rows: [
-          [
-            "SITE_URL",
-            "The public address of this deployment. Every QR code and NFC tag URL is built from it.",
-          ],
-          ["NEXT_PUBLIC_SUPABASE_URL", "Which Supabase project to talk to."],
-          ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "Public key used from the browser."],
-          [
-            "SUPABASE_SECRET_KEY",
-            "Server-only key. Creates staff accounts and cleans up orphaned files.",
-          ],
-          ["DISCORD_WEBHOOK_URL", "Where announcements and event reminders are posted."],
-          ["CRON_SECRET", "Shared password for the scheduled reminder job."],
-        ],
-      },
-      {
-        kind: "note",
-        text: "Values are deliberately not shown here. They live in the deployment's environment settings.",
-      },
       { kind: "heading", text: "Event reminders" },
       {
         kind: "prose",
@@ -400,18 +382,22 @@ export const DOC_SECTIONS: DocSection[] = [
     summary: "What hackers report, what causes it, and what to do.",
     blocks: [
       {
+        kind: "prose",
+        text: "Some of these need an organizer to finish. Where that is the case it says so - recognise the symptom, then hand it over with the hacker's name and email rather than guessing.",
+      },
+      {
         kind: "faq",
         items: [
           {
             symptom: "“No application found for this email.”",
             cause:
               "There is no application under that exact address. Usually a typo, a personal address instead of the one they applied with, or an application stored with different capitalisation.",
-            fix: "Ask for the exact address they applied with. If that is right and it still fails, the application row is missing or stored with capital letters - check it, and promote them with the promote script if they should have access.",
+            fix: "Ask for the exact address they applied with. If that is right and it still fails, an organizer has to check the application row and promote them.",
           },
           {
             symptom: "“Your application has not been accepted yet.”",
             cause: "The application exists but is not marked accepted.",
-            fix: "If they should be in, mark the application accepted, or promote them directly with the promote script.",
+            fix: "An organizer marks the application accepted, or promotes them directly. Take their name and address and pass it on.",
           },
           {
             symptom: "“Please wait a moment before requesting another code.”",
@@ -432,13 +418,13 @@ export const DOC_SECTIONS: DocSection[] = [
           {
             symptom: "Signed in, but the portal says “Access not available”.",
             cause: "The account exists but has no role. They were never promoted.",
-            fix: "Promote them with the promote script. They will not appear in staff management - an account without a role has no profile, so there is nothing there to change.",
+            fix: "An organizer has to promote them. Worth saying out loud: they will not show up in staff management either, so do not let anyone conclude the account is missing.",
           },
           {
             symptom: "“We couldn't load your profile.”",
             cause:
               "The account has portal access but no profile row, which happens when a role was set by editing metadata by hand.",
-            fix: "Re-run the promote script for that address. It is safe to repeat and re-provisions the missing profile.",
+            fix: "An organizer re-runs the promote script for that address, which re-provisions the missing profile.",
           },
           {
             symptom: "Their tag scans, but it says “No hacker found for this tag.”",
@@ -449,12 +435,12 @@ export const DOC_SECTIONS: DocSection[] = [
           {
             symptom: "Trek: “No team with that code.”",
             cause: "Wrong code, or they are typing it from memory.",
-            fix: "Codes are 6 characters and capitalisation does not matter. Read the real one off the Teams list on the Trek page.",
+            fix: "Codes are 6 characters and capitalisation does not matter. An organizer can read the real one off the Teams list.",
           },
           {
             symptom: "Trek: “Team … is full.”",
             cause: "The team has hit the max team size.",
-            fix: "Raise Max team size in the Trek settings, or put them on a different team.",
+            fix: "Either they join a different team, or an organizer raises the max team size.",
           },
           {
             symptom: "Trek: “You are already on a team.”",
@@ -478,7 +464,7 @@ export const DOC_SECTIONS: DocSection[] = [
             symptom: "Trek: “The Third Space Trek is not open right now.”",
             cause:
               "Either it has not started, standings are locked, or an organizer unchecked Hunt is open.",
-            fix: "Check the Trek settings. The times are Toronto time, and the Hunt is open box overrides them either way.",
+            fix: "Expected outside the hunt window. If it should be running, an organizer checks the trek settings.",
           },
           {
             symptom: "Their photo upload fails, or nothing shows up after uploading.",
@@ -492,17 +478,12 @@ export const DOC_SECTIONS: DocSection[] = [
 
   {
     id: "help-staff",
-    title: "Troubleshooting - staff",
-    summary: "Problems you will hit yourself, and how to clear them.",
+    title: "Troubleshooting - the desk",
+    summary: "Problems you will hit yourself while checking people in.",
     blocks: [
       {
         kind: "faq",
         items: [
-          {
-            symptom: "I don't see the Trek, Staff or Announcements links.",
-            cause: "You are a volunteer. Those pages are organizer-only.",
-            fix: "If you need them, ask an organizer to change your role in staff management.",
-          },
           {
             symptom: "The check-in page did not check anyone in automatically.",
             cause:
@@ -526,6 +507,26 @@ export const DOC_SECTIONS: DocSection[] = [
               "That event is not a meal or registration, so the database refuses to record a check-in for it.",
             fix: "Nothing is broken. If an event genuinely needs check-in, an organizer has to mark it that way in the schedule.",
           },
+          {
+            symptom: "I can't see the Trek, Staff or Announcements links.",
+            cause:
+              "You are a volunteer. Those pages are organizer-only, and the links are hidden rather than shown and refused.",
+            fix: "Nothing is wrong with your account - the desk job needs none of those pages. If you genuinely need one, ask an organizer.",
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: "help-organizers",
+    title: "Troubleshooting - organizers",
+    summary: "Roles, announcements, Discord and the trek.",
+    organizerOnly: true,
+    blocks: [
+      {
+        kind: "faq",
+        items: [
           {
             symptom:
               "“You cannot change your own role.” / “Only a superadmin can change organizer roles.” / “Superadmin is set manually in the database.”",
