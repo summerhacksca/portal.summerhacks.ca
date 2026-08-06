@@ -89,7 +89,10 @@ export const DOC_SECTIONS: DocSection[] = [
             "organizer",
             "All of the above, plus announcements, the trek admin and staff management.",
           ],
-          ["superadmin", "Everything an organizer can do, plus granting and revoking organizer."],
+          [
+            "superadmin",
+            "Everything an organizer can do, plus granting and revoking organizer.",
+          ],
         ],
       },
       {
@@ -459,8 +462,10 @@ export const DOC_SECTIONS: DocSection[] = [
             fix: "They leave their current team first. If that team has already logged a photo, leaving is blocked - see the next entry.",
           },
           {
-            symptom: "Trek: “Your team has already logged photos - ask an organizer if you need to switch.”",
-            cause: "Teams lock once they start scoring, so points cannot be shuffled between them.",
+            symptom:
+              "Trek: “Your team has already logged photos - ask an organizer if you need to switch.”",
+            cause:
+              "Teams lock once they start scoring, so points cannot be shuffled between them.",
             fix: "Only an organizer can undo this, directly in the database. Decide first whether the move is fair to the other teams.",
           },
           {
@@ -524,7 +529,8 @@ export const DOC_SECTIONS: DocSection[] = [
           {
             symptom:
               "“You cannot change your own role.” / “Only a superadmin can change organizer roles.” / “Superadmin is set manually in the database.”",
-            cause: "The three rules that stop the role system from being used to escalate access.",
+            cause:
+              "The three rules that stop the role system from being used to escalate access.",
             fix: "Ask a superadmin. Superadmin itself has to be set in the database by hand.",
           },
           {
