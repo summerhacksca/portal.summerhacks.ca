@@ -13,6 +13,8 @@ function adminPageLabel(pathname: string): string | null {
 
   if (pathname.startsWith("/admin/checkin")) return "Check-in";
 
+  if (pathname.startsWith("/admin/docs")) return "Staff guide";
+
   const segment = pathname.replace(/^\/admin\/?/, "").split("/")[0];
   return segment ? segment.replaceAll("-", " ") : null;
 }

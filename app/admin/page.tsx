@@ -48,6 +48,25 @@ export default async function AdminHomePage() {
           </Link>
         </section>
 
+        {/* Outside the organizer block on purpose - volunteers need the
+            check-in and sign-in sections most of all. */}
+        <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
+          <h2 className="font-display text-lg font-medium tracking-tight text-base-800">
+            Staff guide
+          </h2>
+          <p className="font-body text-[14px] leading-relaxed text-base-800">
+            How every part of the portal works, and what to do when a hacker can&apos;t sign in,
+            a tag won&apos;t scan, or the trek won&apos;t open. Written to be read on your phone
+            mid-shift.
+          </p>
+          <Link
+            href="/admin/docs"
+            className="font-display text-sm font-medium tracking-tight text-text-brand-accent hover:text-orange"
+          >
+            Read the guide →
+          </Link>
+        </section>
+
         {canSeeOrganizerLinks && (
           <>
             <section className="flex flex-col gap-4 rounded-sm bg-surface-card p-5 shadow-card sm:p-7">
