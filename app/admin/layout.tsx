@@ -58,6 +58,12 @@ export default async function AdminLayout({
           >
             NFC tags
           </Link>
+          <Link
+            href="/admin/docs"
+            className="inline-flex h-9.5 items-center rounded-pill bg-surface-pill px-4 font-display text-[13px] font-medium tracking-tight text-text-brand-accent transition-opacity hover:opacity-80"
+          >
+            Guide
+          </Link>
           {canSeeOrganizerLinks && (
             <>
               <Link
