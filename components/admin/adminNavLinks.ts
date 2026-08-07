@@ -15,6 +15,7 @@ export const ADMIN_TABS: AdminNavTab[] = [
 ];
 
 export const ORGANIZER_TABS: AdminNavTab[] = [
+  { href: "/admin/walk-ins", label: "Walk-ins" },
   { href: "/admin/trek", label: "Trek" },
   { href: "/admin/staff", label: "Staff" },
   { href: "/admin/announcements", label: "Announcements" },

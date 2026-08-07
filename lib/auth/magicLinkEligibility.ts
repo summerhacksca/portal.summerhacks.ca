@@ -1,9 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { canAccessAdmin } from "@/lib/auth/roles";
+import { canAccessPortal } from "@/lib/auth/roles";
 
 export type MagicLinkEligibility = { ok: true } | { ok: false; error: string; status: number };
 
-async function isStaffEmail(adminClient: SupabaseClient, email: string): Promise<boolean> {
+/**
+ * Whether this email already belongs to a provisioned portal account. Staff
+ * added at /admin/staff and walk-in hackers added at /admin/walk-ins never
+ * submit an application, so the application_submissions lookup below would
+ * turn them away. public.user_roles is this app's source of truth for access -
+ * it is what proxy.ts gates on - so a portal role here outranks whatever the
+ * applications table does or doesn't say.
+ */
+async function hasPortalRole(adminClient: SupabaseClient, email: string): Promise<boolean> {
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("user_id")
@@ -11,7 +19,7 @@ async function isStaffEmail(adminClient: SupabaseClient, email: string): Promise
     .maybeSingle();
 
   if (profileError) {
-    console.error("Failed to look up profile for staff check:", profileError);
+    console.error("Failed to look up profile for portal role check:", profileError);
     return false;
   }
 
@@ -24,11 +32,11 @@ async function isStaffEmail(adminClient: SupabaseClient, email: string): Promise
     .maybeSingle();
 
   if (roleError) {
-    console.error("Failed to look up user role for staff check:", roleError);
+    console.error("Failed to look up user role for portal role check:", roleError);
     return false;
   }
 
-  return canAccessAdmin(roleRow?.role ?? "user");
+  return canAccessPortal(roleRow?.role ?? "user");
 }
 
 /** Whether a magic link may be sent for portal / RSVP sign-in. */
@@ -36,7 +44,7 @@ export async function getMagicLinkEligibility(
   adminClient: SupabaseClient,
   email: string,
 ): Promise<MagicLinkEligibility> {
-  if (await isStaffEmail(adminClient, email)) {
+  if (await hasPortalRole(adminClient, email)) {
     return { ok: true };
   }
 

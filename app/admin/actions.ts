@@ -16,6 +16,7 @@ import {
   discordColorForCss,
   isAnnouncementAccentKey,
 } from "@/lib/portal/announcementAccents";
+import { getCheckinQr } from "@/lib/portal/checkinQr";
 import { activeCheckinEvents } from "@/lib/portal/checkinWindow";
 import { getCheckinEvents } from "@/lib/portal/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -29,6 +30,17 @@ export type CheckinResult = {
 export type AutoCheckinResult = CheckinResult & {
   eventId: string | null;
   eventTitle: string | null;
+};
+
+/**
+ * A walk-in's permanent check-in URL and a QR of it, so the desk can tag them
+ * and check them into registration without leaving the page. Null on failure,
+ * and on the one partial success where the account exists but no tag was
+ * provisioned.
+ */
+export type WalkInResult = CheckinResult & {
+  checkInUrl: string | null;
+  qrDataUrl: string | null;
 };
 
 /**
@@ -368,7 +380,7 @@ export async function inviteStaff(formData: FormData): Promise<CheckinResult> {
     // The service-role RPC, not admin_set_user_role - this bypasses the
     // organizer-vs-organizer check we've already made above, and its write
     // is what fires user_roles_create_profile (migrations/0006) to
-    // provision the profiles row isStaffEmail() needs before a magic link
+    // provision the profiles row hasPortalRole() needs before a magic link
     // can be sent (lib/auth/magicLinkEligibility.ts).
     const { error: roleError } = await admin.rpc("set_user_role", {
       target_user_id: authUser.id,
@@ -390,6 +402,168 @@ export async function inviteStaff(formData: FormData): Promise<CheckinResult> {
   revalidatePath("/admin", "layout");
 
   return { success: true, message: `${email} can now sign in at /portal/login.` };
+}
+
+const walkInFailure = (message: string): WalkInResult => ({
+  success: false,
+  message,
+  checkInUrl: null,
+  qrDataUrl: null,
+});
+
+/**
+ * Register a hacker who turned up on the day without applying.
+ *
+ * Everything a walk-in needs falls out of the one role write: set_user_role
+ * fires user_roles_sync_to_auth (the role lands in their JWT, which is what
+ * proxy.ts gates the portal on), user_roles_create_profile -> ensure_profile
+ * (their profiles row), and profiles_set_nfc_id (their permanent tag ID). All
+ * three run inside the RPC's transaction, so the nfc_id read below is safe the
+ * moment it returns - see migrations/0005 and 0006.
+ *
+ * The RSVP is written for them because they never saw /rsvp. Nothing gates on
+ * it, but it is where headcounts are read from.
+ *
+ * Re-running this for the same email is harmless: the account, the role write
+ * and the RSVP are each skipped if they already exist, and the same check-in
+ * URL comes back.
+ */
+export async function addWalkInHacker(formData: FormData): Promise<WalkInResult> {
+  await requireOrganizer();
+
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const fullName = String(formData.get("full_name") ?? "").trim();
+
+  if (!email) {
+    return walkInFailure("Email is required.");
+  }
+
+  const admin = createAdminClient();
+
+  try {
+    let authUser = await findAuthUserByEmail(admin, email);
+
+    if (!authUser) {
+      const { data, error } = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: fullName ? { full_name: fullName } : undefined,
+      });
+
+      if (error || !data.user) {
+        console.error("Failed to create walk-in account:", error);
+        return walkInFailure(error?.message ?? "Failed to create account.");
+      }
+
+      authUser = data.user;
+    }
+
+    // Read the existing role before writing one. A mistyped email that happens
+    // to belong to a volunteer or organizer would otherwise demote them to
+    // hacker and lock them out of /admin mid-event.
+    const { data: roleRow, error: roleLookupError } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+
+    if (roleLookupError) {
+      console.error("Failed to read walk-in's current role:", roleLookupError);
+      return walkInFailure(roleLookupError.message);
+    }
+
+    const currentRole: UserRole = isUserRole(roleRow?.role) ? roleRow.role : "user";
+
+    if (canAccessAdmin(currentRole)) {
+      return walkInFailure(`${email} is already staff - change their role from Staff instead.`);
+    }
+
+    if (currentRole !== "hacker") {
+      // The service-role RPC for the same reason inviteStaff uses it: this is
+      // the write that provisions the profile and the tag ID.
+      const { error: roleError } = await admin.rpc("set_user_role", {
+        target_user_id: authUser.id,
+        new_role: "hacker",
+      });
+
+      if (roleError) {
+        console.error("Failed to set walk-in's role:", roleError);
+        return walkInFailure(roleError.message);
+      }
+    }
+
+    // Never overwrite an answer they gave themselves - a returning hacker who
+    // said "No" and then showed up anyway keeps their own row. Read-then-insert
+    // mirrors app/api/rsvp/route.ts; there is no unique index on user_id.
+    const { data: existingRsvp, error: rsvpLookupError } = await admin
+      .from("rsvp_submissions")
+      .select("id")
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+
+    if (rsvpLookupError) {
+      console.error("Failed to read walk-in's RSVP:", rsvpLookupError);
+      return walkInFailure(rsvpLookupError.message);
+    }
+
+    if (!existingRsvp) {
+      const { error: rsvpError } = await admin.from("rsvp_submissions").insert({
+        user_id: authUser.id,
+        email,
+        participating: "Count me in",
+        downtown: "Yes",
+      });
+
+      if (rsvpError) {
+        console.error("Failed to record walk-in RSVP:", rsvpError);
+        return walkInFailure(rsvpError.message);
+      }
+    }
+
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("nfc_id, full_name")
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+
+    if (profileError || !profile?.nfc_id) {
+      console.error("Walk-in has no provisioned tag:", profileError);
+      return walkInFailure(
+        `${email} is a hacker now, but no check-in tag was provisioned - find them on NFC tags.`,
+      );
+    }
+
+    // ensure_profile() only reads the name off auth metadata, which is set at
+    // creation - so a name typed for someone whose account already existed
+    // would otherwise be dropped on the floor. Fill a blank, never overwrite
+    // what the hacker set on their own profile.
+    if (fullName && !profile.full_name) {
+      const { error: nameError } = await admin
+        .from("profiles")
+        .update({ full_name: fullName, updated_at: new Date().toISOString() })
+        .eq("user_id", authUser.id);
+
+      if (nameError) {
+        console.error("Failed to set walk-in's name:", nameError);
+      }
+    }
+
+    const { url, dataUrl } = await getCheckinQr(profile.nfc_id, 200);
+
+    revalidatePath("/admin", "layout");
+
+    return {
+      success: true,
+      message: `${email} is registered, and can sign in at /portal/login.`,
+      checkInUrl: url,
+      qrDataUrl: dataUrl,
+    };
+  } catch (error) {
+    console.error("Failed to add walk-in hacker:", error);
+    return walkInFailure(error instanceof Error ? error.message : "Failed to add walk-in.");
+  }
 }
 
 /**

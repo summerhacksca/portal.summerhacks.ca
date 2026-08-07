@@ -140,13 +140,13 @@ export const DOC_SECTIONS: DocSection[] = [
       {
         kind: "list",
         items: [
-          "Staff - anyone whose account already exists with a volunteer, organizer or superadmin role.",
-          "Hackers - anyone with an application on file that is marked accepted.",
+          "Anyone already in the system - hacker, volunteer, organizer or superadmin. Walk-ins qualify the moment an organizer registers them.",
+          "Anyone with an application on file that is marked accepted, even if they have never signed in before.",
         ],
       },
       {
         kind: "prose",
-        text: "Anyone else is turned away at the email step, before a code is ever sent. That is why a hacker who was accepted but never added to the system gets an error that reads like a rejection.",
+        text: "Anyone else is turned away at the email step, before a code is ever sent. That is why someone who believes they were accepted, but whose acceptance never reached the system, gets an error that reads like a rejection. An organizer can fix it on the spot by registering them as a walk-in.",
       },
     ],
   },
@@ -213,6 +213,40 @@ export const DOC_SECTIONS: DocSection[] = [
       {
         kind: "note",
         text: "The QR thumbnail and the tag encode the same URL, so a phone camera and a tag tap land on the same page. If a scan says “No hacker found for this tag”, the tag holds a wrong or outdated URL - recopy it here and rewrite the tag.",
+      },
+    ],
+  },
+
+  {
+    id: "walk-ins",
+    title: "Walk-ins",
+    summary: "Registering someone who showed up on the day without applying.",
+    organizerOnly: true,
+    blocks: [
+      {
+        kind: "prose",
+        text: "Someone turns up at the desk with no account: they never applied, or their acceptance never reached the system. Walk-ins turns their email into a full hacker account in one step. Volunteers cannot open this page - bring an organizer over.",
+      },
+      {
+        kind: "steps",
+        items: [
+          "Open Walk-ins from the staff nav and type their email. A name is optional but worth adding - it is what shows on their check-in page.",
+          "Copy or scan the check-in URL that comes back, and write it to a tag.",
+          "Open the check-in page from the same panel to check them into registration.",
+          "Tell them to sign in at the portal login with that same email.",
+        ],
+      },
+      {
+        kind: "list",
+        items: [
+          "They get the hacker role, a profile, a permanent check-in URL, and an RSVP filed as attending - the same set an accepted applicant ends up with.",
+          "Adding the same person twice is safe. Nothing is created or reset a second time, and the same check-in URL comes back.",
+          "An email that already belongs to a volunteer or organizer is refused rather than demoted to hacker. Use Staff to change roles.",
+        ],
+      },
+      {
+        kind: "note",
+        text: "Type the email carefully. It is the address their sign-in code goes to, and a typo creates a second, empty account rather than failing - delete it from Supabase if that happens.",
       },
     ],
   },

@@ -9,6 +9,8 @@ function adminPageLabel(pathname: string): string | null {
 
   if (pathname.startsWith("/admin/nfc-tags")) return "NFC tags";
 
+  if (pathname.startsWith("/admin/walk-ins")) return "Walk-ins";
+
   if (pathname.startsWith("/admin/trek")) return "The Third Space Trek";
 
   if (pathname.startsWith("/admin/checkin")) return "Check-in";

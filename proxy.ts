@@ -70,6 +70,8 @@ export async function proxy(request: NextRequest) {
     }
 
     const isOrganizerOnlyRoute =
+      pathname === "/admin/walk-ins" ||
+      pathname.startsWith("/admin/walk-ins/") ||
       pathname === "/admin/trek" ||
       pathname.startsWith("/admin/trek/") ||
       pathname === "/admin/staff" ||
