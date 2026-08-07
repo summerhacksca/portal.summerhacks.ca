@@ -108,7 +108,7 @@ export default async function AdminHomePage() {
   return (
     <main className="mx-auto flex w-full max-w-290 flex-col gap-9 px-6 py-8 pb-20 sm:px-9">
       <section className="flex flex-col gap-5">
-        <SectionHeader title="Everyone on staff" />
+        <SectionHeader title="Volunteer Tools" />
         <ToolCardGrid cards={SHARED_CARDS} />
       </section>
 
@@ -116,7 +116,7 @@ export default async function AdminHomePage() {
           rather than an "Organizers only" label sitting over nothing. */}
       {canSeeOrganizerLinks && (
         <section className="flex flex-col gap-5">
-          <SectionHeader title="Organizers only" />
+          <SectionHeader title="Organizer Tools" />
           <ToolCardGrid cards={ORGANIZER_CARDS} />
         </section>
       )}
