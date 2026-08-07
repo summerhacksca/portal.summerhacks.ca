@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { signOut } from "@/app/portal/actions";
-import { AGORIZE_URL, DISCORD_URL, TABS } from "./navLinks";
+import { DEVPOST_URL, DISCORD_URL, TABS } from "./navLinks";
 
 /**
  * The portal nav below `lg`, where the six tabs plus the two CTAs no longer fit
@@ -138,7 +138,7 @@ export function MobileNavSheet({ signedIn }: Readonly<{ signedIn: boolean }>) {
               <div className="flex flex-col gap-2.5 border-t border-black/8 pt-5">
                 {/* TODO: Re-enable this when ready */}
                 {/* <a
-                  href={AGORIZE_URL}
+                  href={DEVPOST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   tabIndex={open ? 0 : -1}

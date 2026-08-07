@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MobileNavSheet } from "./MobileNavSheet";
-import { AGORIZE_URL, DISCORD_URL, initials, TABS } from "./navLinks";
+import { DEVPOST_URL, DISCORD_URL, initials, TABS } from "./navLinks";
 import { NavPillGroup, navPillClass } from "./ui/NavPill";
 
 /**
@@ -56,7 +56,7 @@ export function PortalHeader({
       <div className="flex shrink-0 items-center gap-2.5">
         {/* TODO: Re-enable this when ready */}
         {/* <a
-          href={AGORIZE_URL}
+          href={DEVPOST_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="hidden h-9.5 items-center rounded-pill bg-base-900 px-4 font-display text-[13px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80 lg:inline-flex"
