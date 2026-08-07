@@ -10,8 +10,8 @@ export type AdminNavTab = {
 };
 
 export const ADMIN_TABS: AdminNavTab[] = [
-  { href: "/admin/nfc-tags", label: "NFC tags" },
   { href: "/admin/docs", label: "Guide" },
+  { href: "/admin/nfc-tags", label: "NFC tags" },
 ];
 
 export const ORGANIZER_TABS: AdminNavTab[] = [
