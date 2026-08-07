@@ -14,6 +14,8 @@ export const TABS = [
 
 export const AGORIZE_URL = "https://agorize.com"; // TODO: Update this URL
 export const DISCORD_URL = "https://discord.gg/8DsFxnKSf";
+export const DEMOGRAPHIC_FORM_URL =
+	"https://docs.google.com/forms/d/e/1FAIpQLSe3eX0MpH-zZcT9VZObjf4Ye0jTz_1GdVSYTXxg_Zd_gPeFFg/viewform";
 
 /** "Ada Lovelace" -> "AL", "Ada" -> "AD", "" -> "?". Used by the header avatar and the profile card. */
 export function initials(name: string) {
