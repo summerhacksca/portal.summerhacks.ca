@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import SignInForm from "@/components/auth/SignInForm";
 
 type SearchParams = Promise<{ error?: string }>;
@@ -24,6 +25,24 @@ export default async function PortalLoginPage({
         </div>
 
         <SignInForm variant="portal" errorCode={error} />
+
+        <p className="font-body text-[12px] text-sun-400">
+          By signing in, you agree to our{" "}
+          <Link
+            href="/legal/terms"
+            className="underline-offset-2 hover:text-orange hover:underline"
+          >
+            Terms of Use
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/legal/privacy"
+            className="underline-offset-2 hover:text-orange hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );

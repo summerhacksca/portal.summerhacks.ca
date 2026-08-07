@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { type UserRole, isUserRole } from "@/lib/auth/roles";
+import { PRIVACY_VERSION } from "@/lib/legal/privacy";
+import { TERMS_VERSION } from "@/lib/legal/terms";
 import { createClient } from "@/lib/supabase/server";
 import { RESUME_BUCKET } from "./resume";
 import { TREK_BUCKET } from "./trek";
@@ -56,6 +58,50 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   }
 
   return data as Profile | null;
+});
+
+/**
+ * Whether the signed-in user has already accepted the current Terms of Use
+ * and Privacy Policy (lib/legal/terms.ts, lib/legal/privacy.ts). Both must be
+ * accepted - TermsAcceptance presents them together, so a row for one without
+ * the other means the flow was interrupted, and the gate should still hold.
+ * `false` for a signed-out visitor: there's nothing to gate for them, but the
+ * portal layout only renders the acceptance screen once a profile exists.
+ */
+export const hasAcceptedCurrentTerms = cache(async (): Promise<boolean> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  // Two precise lookups rather than one .in() query on both columns - the
+  // documents can (and eventually will) be versioned independently, so a
+  // single query matching either version against either document would wrongly
+  // accept a stale "privacy" row once TERMS_VERSION and PRIVACY_VERSION diverge.
+  const [terms, privacy] = await Promise.all([
+    supabase
+      .from("legal_acceptances")
+      .select("document")
+      .eq("user_id", user.id)
+      .eq("document", "terms")
+      .eq("version", TERMS_VERSION)
+      .maybeSingle(),
+    supabase
+      .from("legal_acceptances")
+      .select("document")
+      .eq("user_id", user.id)
+      .eq("document", "privacy")
+      .eq("version", PRIVACY_VERSION)
+      .maybeSingle(),
+  ]);
+
+  if (terms.error || privacy.error) {
+    console.error("Failed to read legal acceptances:", terms.error ?? privacy.error);
+    return false;
+  }
+
+  return Boolean(terms.data) && Boolean(privacy.data);
 });
 
 export async function getTracks(): Promise<Track[]> {

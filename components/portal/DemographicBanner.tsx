@@ -57,7 +57,7 @@ export function DemographicBanner() {
       <div className="mx-auto flex w-full max-w-[1160px] flex-wrap items-center gap-3 px-6 py-3 sm:px-9">
         <OrangeGlyph size={20} />
         <p className="font-body text-[13px] text-base-800 sm:text-[14px]">
-          Help us make SummerHacks better — take our 2-minute anonymous demographic survey.
+          Help us make SummerHacks better! Take our 2-minute anonymous demographic survey.
         </p>
         <a
           href={DEMOGRAPHIC_FORM_URL}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import SignInForm from "@/components/auth/SignInForm";
 
 type SearchParams = Promise<{ error?: string }>;
@@ -20,6 +21,18 @@ export default async function RSVPLoginPage({
         </p>
 
         <SignInForm variant="rsvp" errorCode={error} />
+
+        <p className="text-center text-[12px] text-[#8a7a63]">
+          By signing in, you agree to our{" "}
+          <Link href="/legal/terms" className="underline-offset-2 hover:text-[#221b14] hover:underline">
+            Terms of Use
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="underline-offset-2 hover:text-[#221b14] hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );
