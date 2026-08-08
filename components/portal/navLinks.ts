@@ -12,7 +12,7 @@ export const TABS = [
   { href: "/portal/profile", label: "Profile" },
 ];
 
-export const DEVPOST_URL = "https://devpost.com"; // TODO: Update this URL
+export const DEVPOST_URL = "https://summerhacksca.devpost.com/"; // TODO: Update this URL
 export const DISCORD_URL = "https://discord.gg/8DsFxnKSf";
 export const DEMOGRAPHIC_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSe3eX0MpH-zZcT9VZObjf4Ye0jTz_1GdVSYTXxg_Zd_gPeFFg/viewform";

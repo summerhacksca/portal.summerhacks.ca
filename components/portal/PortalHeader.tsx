@@ -55,14 +55,14 @@ export function PortalHeader({
 
       <div className="flex shrink-0 items-center gap-2.5">
         {/* TODO: Re-enable this when ready */}
-        {/* <a
-          href={DEVPOST_URL}
+        <a
+          href={"https://summerhacksca.devpost.com/"}
           target="_blank"
           rel="noopener noreferrer"
           className="hidden h-9.5 items-center rounded-pill bg-base-900 px-4 font-display text-[13px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80 lg:inline-flex"
         >
           Submit
-        </a> */}
+        </a>
         <a
           href={DISCORD_URL}
           target="_blank"

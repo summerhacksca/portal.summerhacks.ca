@@ -137,15 +137,15 @@ export function MobileNavSheet({ signedIn }: Readonly<{ signedIn: boolean }>) {
 
               <div className="flex flex-col gap-2.5 border-t border-black/8 pt-5">
                 {/* TODO: Re-enable this when ready */}
-                {/* <a
-                  href={DEVPOST_URL}
+                <a
+                  href={"https://summerhacksca.devpost.com/"}
                   target="_blank"
                   rel="noopener noreferrer"
                   tabIndex={open ? 0 : -1}
                   className="inline-flex h-12 items-center justify-center rounded-pill bg-base-900 px-4 font-display text-[14px] font-medium tracking-tight text-base-0 transition-opacity hover:opacity-80"
                 >
                   Submit
-                </a> */}
+                </a>
                 <a
                   href={DISCORD_URL}
                   target="_blank"
